@@ -1,0 +1,10 @@
+bin(1).
+bin(2).
+bin(3).
+item(1,3).
+item(2,2).
+item(3,5).
+item(4,1).
+item(5,1).
+item(6,2).
+capacity(6).
