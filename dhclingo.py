@@ -2,6 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import clingo
+import logging
+
+hlog = logging.getLogger("heuristic")
+logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
     def __init__(self, hfile, ifile):
@@ -38,17 +42,21 @@ class Declarative(object):
             try:
                 model = handle.next()
                 atom = self.__find_heuristic_atom(model).arguments[0]
-                print("heuristic choice: {}".format(atom))
-                return self.__ext_lits[atom]
+                lit = self.__ext_lits[atom]
+                hlog.debug("choice: {} ({})".format(atom, lit))
+                return lit
             except StopIteration:
-                print("no model found in heuristic, falling back")
+                hlog.warning("found no model!")
         return vsids
 
     def __find_heuristic_atom(self, model):
         """
+        Pick some heuristic atom.
+
         :type model: clingo.Model
         """
-        syms = (x for x in model.symbols(atoms=True) if x.name == "_heuristic")
+        hlog.debug("model: {}".format(model))
+        syms = (x for x in model.symbols(atoms=True) if x.name == "heuristic")
         return syms.next()
 
     def init(self, init):
@@ -70,6 +78,8 @@ class Declarative(object):
                     self.__lit_exts[alit].add(f)
                 except KeyError:
                     self.__lit_exts[alit] = set([f])
+
+        hlog.debug("ext_lits: {}".format(self.__ext_lits))
 
     def propagate(self, ctl, changes):
         for l in changes:
