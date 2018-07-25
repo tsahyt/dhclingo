@@ -4,11 +4,15 @@
 import clingo
 
 class Declarative(object):
-    def __init__(self, hfile):
+    def __init__(self, hfile, ifile):
         super(Declarative, self).__init__()
-        heuristic_program = open(hfile).read()
         self.solver = clingo.Control()
+
+        # load heuristic and instance
+        heuristic_program = open(hfile).read()
+        instance_program = open(ifile).read()
         self.solver.add("base", [], heuristic_program)
+        self.solver.add("base", [], instance_program)
         self.solver.ground([("base",[])])
     
     def decide(self,vsids):

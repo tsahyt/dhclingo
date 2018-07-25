@@ -5,7 +5,8 @@ import os
 
 def main(prg):
     f = os.environ['HFILE']
-    prg.set_heuristic(dhclingo.Declarative(f))
+    i = os.environ['IFILE']
+    prg.set_heuristic(dhclingo.Declarative(f,i))
     prg.ground([("base", [])])
     prg.solve()
 

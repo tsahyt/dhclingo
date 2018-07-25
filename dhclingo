@@ -2,19 +2,21 @@
 
 show_help() {
 cat << EOF
-Usage: ${0##*/} [-h] [-f heuristic] -- <clingo options> ...
+Usage: ${0##*/} [-h] -f <heuristic> -i <instance> -- <clingo options> ...
 Run hclingo with a declarative heuristic.
 
     -h              display this help and exit
     -f HEURISTIC    path to the declarative heuristic
+    -i INSTANCE     path to instance
 EOF
 }
 
 # process command line arguments
+IFILE=None
 HFILE=None
 
 OPTIND=1
-while getopts hf: opt; do
+while getopts hf:i: opt; do
     case $opt in
         h)
             show_help
@@ -22,10 +24,14 @@ while getopts hf: opt; do
             ;;
         f)
             HFILE=$OPTARG
+            ;;
+        i)
+            IFILE=$OPTARG
+            ;;
     esac
 done
 shift "$((OPTIND-1))"
 
 # run hclingo
-env HFILE=$HFILE hclingo dhclingo.lp $@
+env IFILE=$IFILE HFILE=$HFILE hclingo dhclingo.lp $IFILE $@
 echo $@
