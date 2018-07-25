@@ -82,11 +82,13 @@ class Declarative(object):
         hlog.debug("ext_lits: {}".format(self.__ext_lits))
 
     def propagate(self, ctl, changes):
+        hlog.debug("propagate {}".format(changes))
         for l in changes:
             for e in self.__lit_exts[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
 
     def undo(self, thread_id, assign, changes):
+        hlog.debug("undo {}".format(changes))
         for l in changes:
             for e in self.__lit_exts[abs(l)]:
                 self.__externals[e] = assign.is_true(abs(l))
