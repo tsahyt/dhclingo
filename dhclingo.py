@@ -5,7 +5,7 @@ import clingo
 import logging
 
 hlog = logging.getLogger("heuristic")
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
     def __init__(self, hfile, ifile):
