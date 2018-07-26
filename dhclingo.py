@@ -78,16 +78,37 @@ class Declarative(object):
                 hlog.warning("found no model!")
         return vsids
 
+    def __level_weight(self, a, b):
+        level_a = int(str(a.arguments[1]))
+        level_b = int(str(b.arguments[1]))
+        weight_a = int(str(a.arguments[2]))
+        weight_b = int(str(b.arguments[2]))
+
+        if level_a != level_b:
+            if level_a > level_b:
+                return 1
+            else:
+                return -1
+        else:
+            if weight_a > weight_b:
+                return 1
+            elif weight_b < weight_a:
+                return -1
+            else:
+                return 0
+
     def __find_heuristic_atom(self, model):
         """
         Pick some heuristic atom.
 
         :type model: clingo.Model
         """
-        syms = (x for x in model.symbols(atoms=True) if x.name == "heuristic"
+        syms = [x for x in model.symbols(atoms=True) if x.name == "heuristic"
                 and len(x.arguments) == 4
-                and str(x.arguments[0]) not in self.__impossible)
-        return syms.next()
+                and str(x.arguments[0]) not in self.__impossible]
+        syms_s = sorted(syms,cmp=self.__level_weight)
+        print(syms_s)
+        return syms_s[0]
 
     def init(self, init):
         for a in init.symbolic_atoms:
