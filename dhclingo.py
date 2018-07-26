@@ -58,9 +58,9 @@ class Declarative(object):
             name = a.atom.term.name
             arity = len(a.atom.term.arguments)
             self.__external_sigs.append((name, arity))
-        elif a.type == clingo.ast.ASTType.Rule and a.head.atom.term.name == "heuristic":
-            name = a.head.atom.term.arguments[0].name
-            arity = len(a.head.atom.term.arguments[0].arguments)
+        elif a.type == clingo.ast.ASTType.Heuristic:
+            name = a.atom.term.name
+            arity = len(a.atom.term.arguments)
             self.__result_sigs.append((name,arity))
     
     def decide(self,vsids):
