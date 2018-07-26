@@ -5,7 +5,7 @@ import clingo
 import logging
 
 hlog = logging.getLogger("heuristic")
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
     def __init__(self, hfile, ifile):
@@ -16,15 +16,15 @@ class Declarative(object):
         # load heuristic and instance
         heuristic_program = open(hfile).read()
         instance_program = open(ifile).read()
-        initsolver.add("base", [], instance_program)
 
         self.__program = []
         self.__external_sigs = []
         self.__result_sigs = []
-        with initsolver.builder() as b:
-            clingo.parse_program(heuristic_program, 
-                    lambda a: self.__process_hprog(b, a))
-        initsolver.ground([("base",[])])
+        self.__some_location = None
+
+        clingo.parse_program(heuristic_program, self.__process_hprog)
+        clingo.parse_program(instance_program, lambda a:
+                self.__program.append(a))
 
         # define mappings
         self.__externals = dict()
@@ -33,7 +33,7 @@ class Declarative(object):
         self.__lit_ress = dict()
         self.__impossible = set()
 
-    def __process_hprog(self, builder, a):
+    def __process_hprog(self, a):
         self.__collect_watches(self, a)
 
         if a.type == clingo.ast.ASTType.Heuristic:
@@ -49,9 +49,11 @@ class Declarative(object):
                     atom=hatom)
             rule = clingo.ast.Rule(location=l, head=head, body=a.body)
 
-            builder.add(rule)
-        else:
-            builder.add(a)
+            self.__program.append(rule)
+        elif a.type != clingo.ast.ASTType.External:
+            self.__program.append(a)
+
+        self.__some_location = a.location
 
     def __collect_watches(self, builder, a):
         if a.type == clingo.ast.ASTType.External:
@@ -69,8 +71,9 @@ class Declarative(object):
             for stmt in self.__program:
                 b.add(stmt)
             for e in self.__externals:
-                if self.__externals[e] == True:
-                    b.add(e)
+                if self.__externals[e] == True: 
+                    clingo.parse_program("{}.".format(e), lambda a: b.add(a))
+        stepsolver.ground([("base",[])])
         return stepsolver
     
     def decide(self,vsids):
@@ -78,20 +81,25 @@ class Declarative(object):
         with stepsolver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
-                hlog.debug("model: {}".format(model))
-                decision = self.__find_heuristic_atom(model).arguments
-                atom = decision[0]
-                lit = self.__ext_lits[atom]
-                hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
-                if str(decision[3]) == "true":
+                # hlog.debug("model: {}".format(model))
+                decision = self.__find_heuristic_atom(model)
+                if decision:
+                    decision = decision.arguments
+                    atom = decision[0]
+                    lit = self.__ext_lits[atom]
+                    hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
+                    if str(decision[3]) == "true":
+                        return lit
+                    elif str(decision[3]) == "false":
+                        return -lit
+                    else:
+                        hlog.warning(
+                                "Invalid modifier {}! Defaulting to true".format(
+                                    decision[3]))
                     return lit
-                elif str(decision[3]) == "false":
-                    return -lit
                 else:
-                    hlog.warning(
-                            "Invalid modifier {}! Defaulting to true".format(
-                                decision[3]))
-                return lit
+                    hlog.warning("No decision made by heuristic, falling back")
+                    return vsids
             except StopIteration:
                 hlog.warning("found no model!")
         return vsids
@@ -125,7 +133,10 @@ class Declarative(object):
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
         syms_s = sorted(syms,cmp=self.__level_weight)
-        return syms_s[-1]
+        if syms_s:
+            return syms_s[0]
+        else:
+            return None
 
     def init(self, init):
         for a in init.symbolic_atoms:
@@ -158,6 +169,7 @@ class Declarative(object):
                     self.__lit_ress[alit] = set([f])
 
         hlog.debug("ext_lits: {}".format(self.__ext_lits))
+        self.__make_step_solver()
 
     def propagate(self, ctl, changes):
         hlog.debug("propagate {}".format(changes))
