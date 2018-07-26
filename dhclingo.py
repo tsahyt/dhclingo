@@ -10,21 +10,21 @@ logging.basicConfig(level=logging.DEBUG)
 class Declarative(object):
     def __init__(self, hfile, ifile):
         super(Declarative, self).__init__()
-        self.solver = clingo.Control()
 
-        hlog.info("Initializing Heuristic Solver")
+        initsolver = clingo.Control()
+
         # load heuristic and instance
         heuristic_program = open(hfile).read()
         instance_program = open(ifile).read()
-        self.solver.add("base", [], instance_program)
+        initsolver.add("base", [], instance_program)
 
+        self.__program = []
         self.__external_sigs = []
         self.__result_sigs = []
-        with self.solver.builder() as b:
+        with initsolver.builder() as b:
             clingo.parse_program(heuristic_program, 
                     lambda a: self.__process_hprog(b, a))
-        self.solver.ground([("base",[])])
-        hlog.info("Initializing done!")
+        initsolver.ground([("base",[])])
 
         # define mappings
         self.__externals = dict()
@@ -62,17 +62,35 @@ class Declarative(object):
             name = a.atom.term.name
             arity = len(a.atom.term.arguments)
             self.__result_sigs.append((name,arity))
+
+    def __make_step_solver(self):
+        stepsolver = clingo.Control()
+        with stepsolver.builder() as b:
+            for stmt in self.__program:
+                b.add(stmt)
+            for e in self.__externals:
+                if self.__externals[e] == True:
+                    b.add(e)
+        return stepsolver
     
     def decide(self,vsids):
-        for e in self.__externals:
-            self.solver.assign_external(e,self.__externals[e])
-        with self.solver.solve(yield_=True) as handle:
+        stepsolver = self.__make_step_solver()
+        with stepsolver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
                 hlog.debug("model: {}".format(model))
-                atom = self.__find_heuristic_atom(model).arguments[0]
+                decision = self.__find_heuristic_atom(model).arguments
+                atom = decision[0]
                 lit = self.__ext_lits[atom]
-                hlog.debug("choice: {} ({})".format(atom, lit))
+                hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
+                if str(decision[3]) == "true":
+                    return lit
+                elif str(decision[3]) == "false":
+                    return -lit
+                else:
+                    hlog.warning(
+                            "Invalid modifier {}! Defaulting to true".format(
+                                decision[3]))
                 return lit
             except StopIteration:
                 hlog.warning("found no model!")
@@ -107,8 +125,7 @@ class Declarative(object):
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
         syms_s = sorted(syms,cmp=self.__level_weight)
-        print(syms_s)
-        return syms_s[0]
+        return syms_s[-1]
 
     def init(self, init):
         for a in init.symbolic_atoms:
