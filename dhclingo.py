@@ -12,6 +12,7 @@ class Declarative(object):
         super(Declarative, self).__init__()
         self.solver = clingo.Control()
 
+        hlog.info("Initializing Heuristic Solver")
         # load heuristic and instance
         heuristic_program = open(hfile).read()
         instance_program = open(ifile).read()
@@ -21,8 +22,9 @@ class Declarative(object):
         self.__result_sigs = []
         with self.solver.builder() as b:
             clingo.parse_program(heuristic_program, 
-                    lambda a: self.__collect_watches(b, a))
+                    lambda a: self.__process_hprog(b, a))
         self.solver.ground([("base",[])])
+        hlog.info("Initializing done!")
 
         # define mappings
         self.__externals = dict()
@@ -30,6 +32,26 @@ class Declarative(object):
         self.__lit_exts = dict()
         self.__lit_ress = dict()
         self.__impossible = set()
+
+    def __process_hprog(self, builder, a):
+        self.__collect_watches(self, a)
+
+        if a.type == clingo.ast.ASTType.Heuristic:
+            l = a.location
+            mod = a.modifier
+            bias = a.bias
+            priority = a.priority
+            
+            hargs = [a.atom.term, bias, priority, mod]
+            hatom = clingo.ast.SymbolicAtom(clingo.ast.Function(location=l, 
+                name="heuristic", arguments=hargs, external=False))
+            head = clingo.ast.Literal(location=l, sign=clingo.ast.Sign.NoSign, 
+                    atom=hatom)
+            rule = clingo.ast.Rule(location=l, head=head, body=a.body)
+
+            builder.add(rule)
+        else:
+            builder.add(a)
 
     def __collect_watches(self, builder, a):
         if a.type == clingo.ast.ASTType.External:
@@ -40,7 +62,6 @@ class Declarative(object):
             name = a.head.atom.term.arguments[0].name
             arity = len(a.head.atom.term.arguments[0].arguments)
             self.__result_sigs.append((name,arity))
-        builder.add(a)
     
     def decide(self,vsids):
         for e in self.__externals:
@@ -48,6 +69,7 @@ class Declarative(object):
         with self.solver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
+                hlog.debug("model: {}".format(model))
                 atom = self.__find_heuristic_atom(model).arguments[0]
                 lit = self.__ext_lits[atom]
                 hlog.debug("choice: {} ({})".format(atom, lit))
@@ -62,8 +84,8 @@ class Declarative(object):
 
         :type model: clingo.Model
         """
-        # hlog.debug("model: {}".format(model))
         syms = (x for x in model.symbols(atoms=True) if x.name == "heuristic"
+                and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible)
         return syms.next()
 

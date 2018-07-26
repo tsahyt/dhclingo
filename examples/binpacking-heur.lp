@@ -9,4 +9,4 @@ score(I,B,S) :-
 
 best(I,B) :- score(I,B,X), X = #min { Z : score(_,_,Z) }.
 
-heuristic(place(I,B)) :- best(I,B).
+#heuristic place(I,B) : best(I,B). [0@0, true]
