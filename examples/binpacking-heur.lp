@@ -2,11 +2,7 @@
 
 placed(I) :- place(I,_).
 
-score(I,B,S) :- 
-    F = #sum { X,I1 : place(I1,B), item(I1,X), bin(B) }, 
-    item(I,W), bin(B), capacity(C), not placed(I),
-    S = C - (F + W), S >= 0.
+fill(B,S) :- S = #sum { W,I : place(I,B), item(I,W) }, bin(B).
 
-best(I,B) :- score(I,B,X), X = #min { Z : score(_,_,Z) }.
-
-#heuristic place(I,B) : best(I,B). [0@0, true]
+#heuristic place(I,B) : 
+    bin(B), item(I,W), capacity(C), fill(B,S), C >= S + W. [S+I@0, true]
