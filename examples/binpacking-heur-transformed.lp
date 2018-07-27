@@ -1,5 +1,6 @@
 placed(I) :- place(I,_).
 
-fill(B,S) :- S = #sum { W,I : place(I,B), item(I,W) }, bin(B).
-
-heuristic(place(I,B),S+I,0,true) :- bin(B), item(I,W), capacity(C), fill(B,S), C >= S + W.
+heuristic(place(I,B),S+I,0,true) :-
+    bin(B), item(I,W), capacity(C), not placed(I),
+    S = #sum { X,I1 : place(I1,B), item(I1,X) }, 
+    C >= S + W.

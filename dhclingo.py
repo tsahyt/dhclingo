@@ -3,9 +3,10 @@
 
 import clingo
 import logging
+import time
 
 hlog = logging.getLogger("heuristic")
-# logging.basicConfig(level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
     def __init__(self, hfile, ifile):
@@ -77,10 +78,13 @@ class Declarative(object):
         return stepsolver
     
     def decide(self,vsids):
+        t0 = time.time()
         stepsolver = self.__make_step_solver()
         with stepsolver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
+                t1 = time.time()
+                hlog.debug("step solver created and solved in {} s".format(t1 - t0))
                 # hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 if decision:
@@ -168,11 +172,8 @@ class Declarative(object):
                 except KeyError:
                     self.__lit_ress[alit] = set([f])
 
-        hlog.debug("ext_lits: {}".format(self.__ext_lits))
-        self.__make_step_solver()
-
     def propagate(self, ctl, changes):
-        hlog.debug("propagate {}".format(changes))
+        #hlog.debug("propagate {}".format(changes))
         for l in changes:
             for e in self.__lit_exts[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
@@ -183,7 +184,7 @@ class Declarative(object):
                 pass
 
     def undo(self, thread_id, assign, changes):
-        hlog.debug("undo {}".format(changes))
+        #hlog.debug("undo {}".format(changes))
         for l in changes:
             for e in self.__lit_exts[abs(l)]:
                 self.__externals[e] = assign.is_true(abs(l))
