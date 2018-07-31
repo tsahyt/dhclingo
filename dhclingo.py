@@ -3,7 +3,6 @@
 
 import clingo
 import logging
-import time
 
 hlog = logging.getLogger("heuristic")
 #logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +21,7 @@ class Declarative(object):
         self.__external_sigs = []
         self.__result_sigs = []
         self.__some_location = None
+        self.__undo_performed = False
 
         clingo.parse_program(heuristic_program, self.__process_hprog)
         clingo.parse_program(instance_program, lambda a:
@@ -55,6 +55,7 @@ class Declarative(object):
             self.__program.append(a)
 
         self.__some_location = a.location
+        self.__step_solver = self.__make_step_solver()
 
     def __collect_watches(self, builder, a):
         if a.type == clingo.ast.ASTType.External:
@@ -78,13 +79,13 @@ class Declarative(object):
         return stepsolver
     
     def decide(self,vsids):
-        t0 = time.time()
-        stepsolver = self.__make_step_solver()
-        with stepsolver.solve(yield_=True) as handle:
+        if self.__undo_performed:
+            self.__step_solver = self.__make_step_solver()
+        else:
+            self.__ground_new()
+        with self.__step_solver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
-                t1 = time.time()
-                hlog.debug("step solver created and solved in {} s".format(t1 - t0))
                 # hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 if decision:
@@ -185,6 +186,7 @@ class Declarative(object):
 
     def undo(self, thread_id, assign, changes):
         #hlog.debug("undo {}".format(changes))
+        self.__undo_performed = True
         for l in changes:
             for e in self.__lit_exts[abs(l)]:
                 self.__externals[e] = assign.is_true(abs(l))
