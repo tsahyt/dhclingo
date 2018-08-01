@@ -16,7 +16,8 @@ orderStep(1..X) :- maxOrdinal(X).
 % :- order(z,Z,O1), order(s,S,O2), zone2sensor(Z,S), O2 <= O1.
 
 %%% Breadth First Order (by Level)
-1 { source(Z) : zone(Z) } 1.
+% 1 { source(Z) : zone(Z) } 1.
+source(1).
 
 visitedAt(z,Z,1) :- source(Z).
 visitedAt(s,S,O) :- visitedAt(z,Z,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(s,S,O).
@@ -36,7 +37,7 @@ availableElem(s,S) :- not usedElem(s,S), sensor(S).
 
 canAssign(A,E,U) :- availableElem(A,E), availableUnit(U).
 
-heuristic(unit2zone(U,Z),U,L,true) :- visitedAt(z,Z,L), canAssign(z,Z,U).
-heuristic(unit2sensor(U,S),U,L,true) :- visitedAt(s,S,L), canAssign(s,S,U).
+heuristic(unit2zone(U,Z),-U,-L,true) :- visitedAt(z,Z,L), canAssign(z,Z,U).
+heuristic(unit2sensor(U,S),-U,-L,true) :- visitedAt(s,S,L), canAssign(s,S,U).
 
 #show heuristic/4.
