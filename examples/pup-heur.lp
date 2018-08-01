@@ -1,3 +1,10 @@
+#external source(Z) : zone(Z).
+#external unit2zone(U,Z) : unit(U), zone(Z).
+#external unit2sensor(U,S) : unit(U), sensor(S).
+#external visitedAt(A,X,O).
+
+% from instance file
+unit(U) :- comUnit(U).
 zone(Z) :- zone2sensor(Z,S).
 sensor(S) :- zone2sensor(Z,S).
 

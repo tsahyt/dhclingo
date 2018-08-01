@@ -1,4 +1,4 @@
-unit(1..3).
+comUnit(1..3).
 
 zone2sensor(1,1).
 zone2sensor(2,1).

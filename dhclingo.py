@@ -85,7 +85,7 @@ class Declarative(object):
                 model = handle.next()
                 t1 = time.time()
                 hlog.debug("step solver created and solved in {} s".format(t1 - t0))
-                # hlog.debug("model: {}".format(model))
+                hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 if decision:
                     decision = decision.arguments
