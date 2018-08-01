@@ -4,22 +4,39 @@ sensor(S) :- zone2sensor(Z,S).
 maxOrdinal(X) :- X = Z + S, Z = #max { A : zone(A) }, S = #max { A : sensor(A) }.
 orderStep(1..X) :- maxOrdinal(X).
 
-%%% Breadth First Order (by Level)
-% 1 { source(Z) : zone(Z) } 1.
-% 
-% visitedAt(z,Z,1) :- source(Z).
-% visitedAt(s,S,O) :- visitedAt(z,Z,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(s,S,O).
-% visitedAt(z,Z,O) :- visitedAt(s,S,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(z,Z,O).
-% 
-% visitedBefore(A,Z,O) :- orderStep(O), visitedAt(A,Z,P), O > P.
-
 %%% Any Topological Order
-ordinal(1..X) :- maxOrdinal(X).
+% ordinal(1..X) :- maxOrdinal(X).
+% 
+% elem(z,Z) :- zone(Z).
+% elem(s,S) :- sensor(S).
+% 
+% 1 { order(A,X,O) : ordinal(O) } 1 :- elem(A,X).
+% 
+% :- order(A,X,O), order(A,Y,O), X != Y.
+% :- order(z,Z,O1), order(s,S,O2), zone2sensor(Z,S), O2 <= O1.
 
-elem(z,Z) :- zone(Z).
-elem(s,S) :- sensor(S).
+%%% Breadth First Order (by Level)
+1 { source(Z) : zone(Z) } 1.
 
-1 { order(A,X,O) : ordinal(O) } 1 :- elem(A,X).
+visitedAt(z,Z,1) :- source(Z).
+visitedAt(s,S,O) :- visitedAt(z,Z,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(s,S,O).
+visitedAt(z,Z,O) :- visitedAt(s,S,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(z,Z,O).
 
-:- order(A,X,O), order(B,Y,O), A != B, X != Y.
-:- order(z,Z,O1), order(s,S,O2), zone2sensor(Z,S), O2 <= O1.
+visitedBefore(A,Z,O) :- orderStep(O), visitedAt(A,Z,P), O > P.
+maxOrder(O) :- O = #max { X : visitedAt(_,_,X) }.
+
+usedUnit(U) :- unit2zone(U,_).
+usedUnit(U) :- unit2sensor(U,_).
+availableUnit(U) :- not usedUnit(U), unit(U).
+
+usedElem(z,Z) :- unit2zone(_,Z).
+usedElem(s,S) :- unit2sensor(_,S).
+availableElem(z,Z) :- not usedElem(z,Z), zone(Z).
+availableElem(s,S) :- not usedElem(s,S), sensor(S).
+
+canAssign(A,E,U) :- availableElem(A,E), availableUnit(U).
+
+heuristic(unit2zone(U,Z),U,L,true) :- visitedAt(z,Z,L), canAssign(z,Z,U).
+heuristic(unit2sensor(U,S),U,L,true) :- visitedAt(s,S,L), canAssign(s,S,U).
+
+#show heuristic/4.

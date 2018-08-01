@@ -1,3 +1,6 @@
+#const unitCap = 2.
+#const interUnitCap = 2.
+
 unit(1..3).
 
 zone2sensor(1,1).
