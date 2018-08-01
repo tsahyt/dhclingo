@@ -1,31 +1,6 @@
 zone(Z) :- zone2sensor(Z,S).
 sensor(S) :- zone2sensor(Z,S).
 
-maxOrdinal(X) :- X = Z + S, Z = #max { A : zone(A) }, S = #max { A : sensor(A) }.
-orderStep(1..X) :- maxOrdinal(X).
-
-%%% Any Topological Order
-% ordinal(1..X) :- maxOrdinal(X).
-% 
-% elem(z,Z) :- zone(Z).
-% elem(s,S) :- sensor(S).
-% 
-% 1 { order(A,X,O) : ordinal(O) } 1 :- elem(A,X).
-% 
-% :- order(A,X,O), order(A,Y,O), X != Y.
-% :- order(z,Z,O1), order(s,S,O2), zone2sensor(Z,S), O2 <= O1.
-
-%%% Breadth First Order (by Level)
-% 1 { source(Z) : zone(Z) } 1.
-source(1).
-
-visitedAt(z,Z,1) :- source(Z).
-visitedAt(s,S,O) :- visitedAt(z,Z,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(s,S,O).
-visitedAt(z,Z,O) :- visitedAt(s,S,O-1), orderStep(O), zone2sensor(Z,S), not visitedBefore(z,Z,O).
-
-visitedBefore(A,Z,O) :- orderStep(O), visitedAt(A,Z,P), O > P.
-maxOrder(O) :- O = #max { X : visitedAt(_,_,X) }.
-
 usedUnit(U) :- unit2zone(U,_).
 usedUnit(U) :- unit2sensor(U,_).
 availableUnit(U) :- not usedUnit(U), unit(U).
@@ -37,7 +12,12 @@ availableElem(s,S) :- not usedElem(s,S), sensor(S).
 
 canAssign(A,E,U) :- availableElem(A,E), availableUnit(U).
 
-heuristic(unit2zone(U,Z),-U,-L,true) :- visitedAt(z,Z,L), canAssign(z,Z,U).
-heuristic(unit2sensor(U,S),-U,-L,true) :- visitedAt(s,S,L), canAssign(s,S,U).
+% heuristic(unit2zone(U,Z),-U,-L,true) :- visitedAt(z,Z,L), canAssign(z,Z,U).
+#heuristic unit2zone(U,Z) : visitedAt(z,Z,L), canAssign(z,Z,U). [-U@-L, true]
+% heuristic(unit2sensor(U,S),-U,-L,true) :- visitedAt(s,S,L), canAssign(s,S,U).
+#heuristic unit2sensor(U,S) : visitedAt(s,S,L), canAssign(s,S,U). [-U@-L, true]
 
-#show heuristic/4.
+% if no source is known, pick the lexicographically smallest possible
+sourced :- source(X).
+% heuristic(source(Z),-Z,0,true) :- zone(Z), not sourced.
+#heuristic source(Z) : zone(Z), not sourced. [-Z@0, true]
