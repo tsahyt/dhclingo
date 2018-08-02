@@ -6,7 +6,7 @@ import logging
 import time
 
 hlog = logging.getLogger("heuristic")
-#logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
     def __init__(self, hfile, ifile):
@@ -84,8 +84,8 @@ class Declarative(object):
             try:
                 model = handle.next()
                 t1 = time.time()
-                hlog.debug("step solver created and solved in {} s".format(t1 - t0))
-                hlog.debug("model: {}".format(model))
+                # hlog.debug("step solver created and solved in {} s".format(t1 - t0))
+                # hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 if decision:
                     decision = decision.arguments
@@ -108,24 +108,10 @@ class Declarative(object):
                 hlog.warning("found no model!")
         return vsids
 
-    def __level_weight(self, a, b):
-        level_a = int(str(a.arguments[1]))
-        level_b = int(str(b.arguments[1]))
-        weight_a = int(str(a.arguments[2]))
-        weight_b = int(str(b.arguments[2]))
-
-        if level_a != level_b:
-            if level_a > level_b:
-                return 1
-            else:
-                return -1
-        else:
-            if weight_a > weight_b:
-                return 1
-            elif weight_b < weight_a:
-                return -1
-            else:
-                return 0
+    def __level_weight(self, a):
+        weight = int(str(a.arguments[1]))
+        level = int(str(a.arguments[2]))
+        return (level, weight)
 
     def __find_heuristic_atom(self, model):
         """
@@ -136,9 +122,10 @@ class Declarative(object):
         syms = [x for x in model.symbols(atoms=True) if x.name == "heuristic"
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
-        syms_s = sorted(syms,cmp=self.__level_weight)
+        syms_s = sorted(syms,key=self.__level_weight)
+        print syms_s
         if syms_s:
-            return syms_s[0]
+            return syms_s[-1]
         else:
             return None
 

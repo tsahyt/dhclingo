@@ -1,6 +1,6 @@
-#external source(Z) : zone(Z).
-#external unit2zone(U,Z) : unit(U), zone(Z).
-#external unit2sensor(U,S) : unit(U), sensor(S).
+#external source(Z).
+#external unit2zone(U,Z).
+#external unit2sensor(U,S).
 #external visitedAt(A,X,O).
 
 % from instance file
@@ -19,12 +19,9 @@ availableElem(s,S) :- not usedElem(s,S), sensor(S).
 
 canAssign(A,E,U) :- availableElem(A,E), availableUnit(U).
 
-% heuristic(unit2zone(U,Z),-U,-L,true) :- visitedAt(z,Z,L), canAssign(z,Z,U).
 #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), canAssign(z,Z,U). [-U@-L, true]
-% heuristic(unit2sensor(U,S),-U,-L,true) :- visitedAt(s,S,L), canAssign(s,S,U).
 #heuristic unit2sensor(U,S) : visitedAt(s,S,L), canAssign(s,S,U). [-U@-L, true]
 
 % if no source is known, pick the lexicographically smallest possible
 sourced :- source(X).
-% heuristic(source(Z),-Z,0,true) :- zone(Z), not sourced.
 #heuristic source(Z) : zone(Z), not sourced. [-Z@0, true]
