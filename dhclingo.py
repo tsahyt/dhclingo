@@ -122,8 +122,8 @@ class Declarative(object):
         syms = [x for x in model.symbols(atoms=True) if x.name == "heuristic"
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
+        syms = sorted(syms)
         syms_s = sorted(syms,key=self.__level_weight)
-        print syms_s
         if syms_s:
             return syms_s[-1]
         else:
