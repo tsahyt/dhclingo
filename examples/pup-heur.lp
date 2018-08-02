@@ -30,9 +30,11 @@ preferredUnit(z,Z,U) :- canAssign(z,Z,U), unit2sensor(U,S), zone2sensor(Z,S).
 preferredUnit(s,S,U) :- canAssign(s,S,U), unit2zone(U,Z), zone2sensor(Z,S).
 
 #heuristic unit2zone(U,Z) : 
-    visitedAt(z,Z,L), canAssign(z,Z,U), preferredUnit(z,Z,U). [-U@-L+1, true]
+    visitedAt(z,Z,L), canAssign(z,Z,U), preferredUnit(z,Z,U). [0@-L, true]
 #heuristic unit2sensor(U,S) : 
-    visitedAt(s,S,L), canAssign(s,S,U), preferredUnit(s,S,U). [-U@-L+1, true]
+    visitedAt(s,S,L), canAssign(s,S,U), preferredUnit(s,S,U). [0@-L, true]
+
+% TODO: Trace on example
 
 % if no source is known, pick the lexicographically smallest possible
 sourced :- source(X).
