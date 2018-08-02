@@ -6,7 +6,7 @@ import logging
 import time
 
 hlog = logging.getLogger("heuristic")
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
     def __init__(self, hfile, ifile):
@@ -90,6 +90,9 @@ class Declarative(object):
                 if decision:
                     decision = decision.arguments
                     atom = decision[0]
+                    if str(atom) == "vsids":
+                        hlog.debug("heuristic request fallback")
+                        return vsids
                     lit = self.__ext_lits[atom]
                     hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
                     if str(decision[3]) == "true":
