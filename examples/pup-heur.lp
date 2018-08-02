@@ -8,8 +8,9 @@ unit(U) :- comUnit(U).
 zone(Z) :- zone2sensor(Z,S).
 sensor(S) :- zone2sensor(Z,S).
 
-usedUnit(U) :- unit2zone(U,_).
-usedUnit(U) :- unit2sensor(U,_).
+unitUsedAllZones(U) :- unitCap { unit2zone(U,_) }, unit(U).
+unitUsedAllSensors(U) :- unitCap { unit2sensor(U,_) }, unit(U).
+usedUnit(U) :- unitUsedAllZones(U), unitUsedAllSensors(U).
 availableUnit(U) :- not usedUnit(U), unit(U).
 
 usedElem(z,Z) :- unit2zone(_,Z).
