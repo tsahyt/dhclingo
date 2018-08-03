@@ -25,16 +25,20 @@ canAssign(A,E,U) :- availableElem(A,E), availableUnit(U).
 #heuristic unit2sensor(U,S) : visitedAt(s,S,L), canAssign(s,S,U). [-U@-L, true]
 
 % Pred prefers units that are already connected to elements close in the input
-% graph.
-preferredUnit(z,Z,U) :- canAssign(z,Z,U), unit2sensor(U,S), zone2sensor(Z,S).
-preferredUnit(s,S,U) :- canAssign(s,S,U), unit2zone(U,Z), zone2sensor(Z,S).
+% graph. If no such preferred unit can be found, we fall back to QuickPup*.
+preferredUnit1(z,Z,U) :- canAssign(z,Z,U), unit2sensor(U,S), zone2sensor(Z,S).
+preferredUnit1(s,S,U) :- canAssign(s,S,U), unit2zone(U,Z), zone2sensor(Z,S).
+preferredUnit2(z,Z,U) :- canAssign(z,Z,U), unit2zone(U,Z2), zone2sensor(Z,S), zone2sensor(Z2,S).
+preferredUnit2(s,S,U) :- canAssign(z,Z,U), unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2).
 
 #heuristic unit2zone(U,Z) : 
-    visitedAt(z,Z,L), canAssign(z,Z,U), preferredUnit(z,Z,U). [0@-L, true]
+    visitedAt(z,Z,L), canAssign(z,Z,U), preferredUnit2(z,Z,U). [0@-L, true]
 #heuristic unit2sensor(U,S) : 
-    visitedAt(s,S,L), canAssign(s,S,U), preferredUnit(s,S,U). [0@-L, true]
-
-% TODO: Trace on example
+    visitedAt(s,S,L), canAssign(s,S,U), preferredUnit2(s,S,U). [0@-L, true]
+#heuristic unit2zone(U,Z) : 
+    visitedAt(z,Z,L), canAssign(z,Z,U), preferredUnit1(z,Z,U). [1@-L, true]
+#heuristic unit2sensor(U,S) : 
+    visitedAt(s,S,L), canAssign(s,S,U), preferredUnit1(s,S,U). [1@-L, true]
 
 % if no source is known, pick the lexicographically smallest possible
 sourced :- source(X).
