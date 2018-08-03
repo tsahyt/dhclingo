@@ -76,6 +76,9 @@ class Declarative(object):
                     clingo.parse_program("{}.".format(e), lambda a: b.add(a))
         stepsolver.ground([("base",[])])
         return stepsolver
+
+    def __resigned(self, vsids):
+        return vsids
     
     def decide(self,vsids):
         t0 = time.time()
@@ -92,6 +95,10 @@ class Declarative(object):
                     atom = decision[0]
                     if str(atom) == "vsids":
                         hlog.debug("heuristic request fallback")
+                        return vsids
+                    if str(atom) == "resign":
+                        hlog.debug("heuristic resigned, using vsids forever")
+                        self.decide = self.__resigned
                         return vsids
                     lit = self.__ext_lits[atom]
                     hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
