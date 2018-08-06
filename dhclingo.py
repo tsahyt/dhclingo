@@ -9,7 +9,7 @@ hlog = logging.getLogger("heuristic")
 logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
-    def __init__(self, hfile, ifile):
+    def __init__(self, hfile, ifile, offline):
         super(Declarative, self).__init__()
 
         initsolver = clingo.Control()
@@ -33,6 +33,12 @@ class Declarative(object):
         self.__lit_exts = dict()
         self.__lit_ress = dict()
         self.__impossible = set()
+
+        if offline:
+            self.decide = self.__decide_offline
+            self.__offline_decisions = []
+        else:
+            self.decide = self.__decide_online
 
     def __process_hprog(self, a):
         self.__collect_watches(self, a)
@@ -80,7 +86,22 @@ class Declarative(object):
     def __resigned(self, vsids):
         return vsids
     
-    def decide(self,vsids):
+    def __decide_offline(self, vsids):
+        if self.__offline_decisions:
+            d = self.__offline_decisions.pop()
+            return d
+
+        stepsolver = self.__make_step_solver()
+        with stepsolver.solve(yield_=True) as handle:
+            try:
+                model = handle.next()
+                # TODO: find all heuristic decisions,
+                # sort by weight/level
+                # push to self.__offline_decisions, call recursively
+            except StopIteration:
+                hlog.warning("found no model!")
+
+    def __decide_online(self,vsids):
         t0 = time.time()
         stepsolver = self.__make_step_solver()
         with stepsolver.solve(yield_=True) as handle:

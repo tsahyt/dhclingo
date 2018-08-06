@@ -8,15 +8,17 @@ Run hclingo with a declarative heuristic.
     -h              display this help and exit
     -f HEURISTIC    path to the declarative heuristic
     -i INSTANCE     path to instance
+    -o              offline heuristic
 EOF
 }
 
 # process command line arguments
 IFILE=None
 HFILE=None
+OFFLINE=0
 
 OPTIND=1
-while getopts hf:i: opt; do
+while getopts hf:i:o opt; do
     case $opt in
         h)
             show_help
@@ -28,10 +30,13 @@ while getopts hf:i: opt; do
         i)
             IFILE=$OPTARG
             ;;
+        o)
+            OFFLINE=1
+            ;;
     esac
 done
 shift "$((OPTIND-1))"
 
 # run hclingo
-env IFILE=$IFILE HFILE=$HFILE hclingo dhclingo.lp $IFILE $@
+env IFILE=$IFILE HFILE=$HFILE OFFLINE=$OFFLINE hclingo dhclingo.lp $IFILE $@
 echo $@

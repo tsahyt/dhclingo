@@ -1,3 +1,6 @@
+#external vertex_color(V,C).
+#external vertex_bin(V,C).
+
 % #heuristic bin(C,B,V). [0@0, true]
 vtx(V) :- edge(V,_).
 vtx(V) :- edge(_,V).
