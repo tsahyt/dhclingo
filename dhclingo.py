@@ -87,19 +87,22 @@ class Declarative(object):
         return vsids
     
     def __decide_offline(self, vsids):
+        print "decide_offline"
         if self.__offline_decisions:
             d = self.__offline_decisions.pop()
-            return d
+            return self.__make_decision(vsids, d)
 
         stepsolver = self.__make_step_solver()
         with stepsolver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
-                # TODO: find all heuristic decisions,
-                # sort by weight/level
-                # push to self.__offline_decisions, call recursively
+                xs = [x for x in model.symbols(atoms=True) if x.name == "heuristic" and len(x.arguments) == 4]
+                self.__offline_decisions = sorted(sorted(xs), key=self.__level_weight)
+                d = self.__offline_decisions.pop()
+                return self.__make_decision(vsids, d)
             except StopIteration:
                 hlog.warning("found no model!")
+        return vsids
 
     def __decide_online(self,vsids):
         t0 = time.time()
@@ -112,32 +115,35 @@ class Declarative(object):
                 # hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 if decision:
-                    decision = decision.arguments
-                    atom = decision[0]
-                    if str(atom) == "vsids":
-                        hlog.debug("heuristic request fallback")
-                        return vsids
-                    if str(atom) == "resign":
-                        hlog.debug("heuristic resigned, using vsids forever")
-                        self.decide = self.__resigned
-                        return vsids
-                    lit = self.__ext_lits[atom]
-                    hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
-                    if str(decision[3]) == "true":
-                        return lit
-                    elif str(decision[3]) == "false":
-                        return -lit
-                    else:
-                        hlog.warning(
-                                "Invalid modifier {}! Defaulting to true".format(
-                                    decision[3]))
-                    return lit
+                    return self.__make_decision(vsids, decision)
                 else:
                     hlog.warning("No decision made by heuristic, falling back")
                     return vsids
             except StopIteration:
                 hlog.warning("found no model!")
         return vsids
+
+    def __make_decision(self, vsids, decision):
+        decision = decision.arguments
+        atom = decision[0]
+        if str(atom) == "vsids":
+            hlog.debug("heuristic request fallback")
+            return vsids
+        if str(atom) == "resign":
+            hlog.debug("heuristic resigned, using vsids forever")
+            self.decide = self.__resigned
+            return vsids
+        lit = self.__ext_lits[atom]
+        hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
+        if str(decision[3]) == "true":
+            return lit
+        elif str(decision[3]) == "false":
+            return -lit
+        else:
+            hlog.warning(
+                    "Invalid modifier {}! Defaulting to true".format(
+                        decision[3]))
+        return lit
 
     def __level_weight(self, a):
         weight = int(str(a.arguments[1]))
