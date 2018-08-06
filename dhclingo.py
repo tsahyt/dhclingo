@@ -87,21 +87,22 @@ class Declarative(object):
         return vsids
     
     def __decide_offline(self, vsids):
-        print "decide_offline"
-        if self.__offline_decisions:
-            d = self.__offline_decisions.pop()
-            return self.__make_decision(vsids, d)
+        if not self.__offline_decisions:
+            stepsolver = self.__make_step_solver()
+            with stepsolver.solve(yield_=True) as handle:
+                try:
+                    model = handle.next()
+                    xs = [x for x in model.symbols(atoms=True) if x.name == "heuristic" and len(x.arguments) == 4]
+                    xs_s = sorted(sorted(xs), key=self.__level_weight)
+                    self.__offline_decisions = xs_s
+                except StopIteration:
+                    hlog.warning("found no model!")
 
-        stepsolver = self.__make_step_solver()
-        with stepsolver.solve(yield_=True) as handle:
-            try:
-                model = handle.next()
-                xs = [x for x in model.symbols(atoms=True) if x.name == "heuristic" and len(x.arguments) == 4]
-                self.__offline_decisions = sorted(sorted(xs), key=self.__level_weight)
-                d = self.__offline_decisions.pop()
+        while self.__offline_decisions:
+            d = self.__offline_decisions.pop()
+            if str(d.arguments[0]) not in self.__impossible:
                 return self.__make_decision(vsids, d)
-            except StopIteration:
-                hlog.warning("found no model!")
+
         return vsids
 
     def __decide_online(self,vsids):
