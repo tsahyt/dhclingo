@@ -92,7 +92,9 @@ class Declarative(object):
             with stepsolver.solve(yield_=True) as handle:
                 try:
                     model = handle.next()
-                    xs = [x for x in model.symbols(atoms=True) if x.name == "heuristic" and len(x.arguments) == 4]
+                    xs = [x for x in model.symbols(atoms=True) 
+                            if x.name == "heuristic" 
+                            and len(x.arguments) == 4]
                     xs_s = sorted(sorted(xs), key=self.__level_weight)
                     self.__offline_decisions = xs_s
                 except StopIteration:
