@@ -29,9 +29,9 @@ class Declarative(object):
 
         # define mappings
         self.__externals = dict()
-        self.__ext_lits = dict()
         self.__lit_exts = dict()
         self.__lit_ress = dict()
+        self.__res_lits = dict()
         self.__impossible = set()
 
         if offline:
@@ -102,7 +102,9 @@ class Declarative(object):
 
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
+            print d
             if str(d.arguments[0]) not in self.__impossible:
+                print "if"
                 return self.__make_decision(vsids, d)
 
         return vsids
@@ -136,7 +138,7 @@ class Declarative(object):
             hlog.debug("heuristic resigned, using vsids forever")
             self.decide = self.__resigned
             return vsids
-        lit = self.__ext_lits[atom]
+        lit = self.__ress_lits[atom]
         hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
         if str(decision[3]) == "true":
             return lit
@@ -183,7 +185,7 @@ class Declarative(object):
                 f = clingo.Function(name, a.symbol.arguments)
                 alit = abs(lit)
                 self.__externals[f] = a.is_fact
-                self.__ext_lits[f] = alit
+                self.__ress_lits[f] = alit
                 try:
                     self.__lit_exts[alit].add(f)
                 except KeyError:
@@ -198,6 +200,8 @@ class Declarative(object):
                     self.__lit_ress[alit].add(f)
                 except KeyError:
                     self.__lit_ress[alit] = set([f])
+
+        print self.__lit_ress
 
     def propagate(self, ctl, changes):
         #hlog.debug("propagate {}".format(changes))
