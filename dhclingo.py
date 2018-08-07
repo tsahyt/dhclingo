@@ -29,7 +29,7 @@ class Declarative(object):
 
         # define mappings
         self.__externals = dict()
-        self.__lit_exts = dict()
+        self.__lit_watches = dict()
         self.__lit_ress = dict()
         self.__res_lits = dict()
         self.__impossible = set()
@@ -39,6 +39,13 @@ class Declarative(object):
             self.__offline_decisions = []
         else:
             self.decide = self.__decide_online
+
+    def __remember_watch(self, alit, f):
+        self.__res_lits[str(f)] = alit
+        try:
+            self.__lit_watches[alit].add(f)
+        except KeyError:
+            self.__lit_watches[alit] = set([f])
 
     def __process_hprog(self, a):
         self.__collect_watches(self, a)
@@ -102,9 +109,7 @@ class Declarative(object):
 
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
-            print d
             if str(d.arguments[0]) not in self.__impossible:
-                print "if"
                 return self.__make_decision(vsids, d)
 
         return vsids
@@ -138,7 +143,7 @@ class Declarative(object):
             hlog.debug("heuristic resigned, using vsids forever")
             self.decide = self.__resigned
             return vsids
-        lit = self.__ress_lits[atom]
+        lit = self.__res_lits[str(atom)]
         hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
         if str(decision[3]) == "true":
             return lit
@@ -185,11 +190,7 @@ class Declarative(object):
                 f = clingo.Function(name, a.symbol.arguments)
                 alit = abs(lit)
                 self.__externals[f] = a.is_fact
-                self.__ress_lits[f] = alit
-                try:
-                    self.__lit_exts[alit].add(f)
-                except KeyError:
-                    self.__lit_exts[alit] = set([f])
+                self.__remember_watch(alit, f)
             if (name, alen) in self.__result_sigs:
                 init.add_watch(lit)
                 init.add_watch(-lit)
@@ -200,13 +201,12 @@ class Declarative(object):
                     self.__lit_ress[alit].add(f)
                 except KeyError:
                     self.__lit_ress[alit] = set([f])
-
-        print self.__lit_ress
+                self.__remember_watch(alit, f)
 
     def propagate(self, ctl, changes):
         #hlog.debug("propagate {}".format(changes))
         for l in changes:
-            for e in self.__lit_exts[abs(l)]:
+            for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
             try:
                 for a in self.__lit_ress[abs(l)]:
@@ -217,7 +217,7 @@ class Declarative(object):
     def undo(self, thread_id, assign, changes):
         #hlog.debug("undo {}".format(changes))
         for l in changes:
-            for e in self.__lit_exts[abs(l)]:
+            for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = assign.is_true(abs(l))
             try:
                 for a in self.__lit_ress[abs(l)]:
