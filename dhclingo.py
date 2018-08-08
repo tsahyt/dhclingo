@@ -81,12 +81,14 @@ class Declarative(object):
 
     def __make_step_solver(self):
         stepsolver = clingo.Control()
+        hlog.debug("building heuristic program")
         with stepsolver.builder() as b:
             for stmt in self.__program:
                 b.add(stmt)
             for e in self.__externals:
                 if self.__externals[e] == True: 
                     clingo.parse_program("{}.".format(e), lambda a: b.add(a))
+        hlog.debug("grounding heuristic program")
         stepsolver.ground([("base",[])])
         return stepsolver
 
@@ -98,7 +100,9 @@ class Declarative(object):
             stepsolver = self.__make_step_solver()
             with stepsolver.solve(yield_=True) as handle:
                 try:
+                    hlog.debug("solving for heuristic")
                     model = handle.next()
+                    hlog.debug("solving done")
                     xs = [x for x in model.symbols(atoms=True) 
                             if x.name == "heuristic" 
                             and len(x.arguments) == 4]
