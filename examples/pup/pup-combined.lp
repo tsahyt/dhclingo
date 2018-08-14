@@ -1,5 +1,3 @@
-#include <dhclingo>.
-
 % Main ---------------------------------------------------------------------------
 #program base.
 #const unitCap = 2.
@@ -26,7 +24,7 @@ orderStep(1..X) :- maxOrdinal(X).
 
 1 { source(Z) : zone(Z) } 1.
 
-visitedAt(z,Z,1) :- source(Z).
+visitedAt(z,Z,1) :- source(Z)-.
 visitedAt(s,S,O) :- visitedAt(z,Z,O-1), orderStep(O), 
     zone2sensor(Z,S), not visitedBefore(s,S,O).
 visitedAt(z,Z,O) :- visitedAt(s,S,O-1), orderStep(O), 
