@@ -14,18 +14,16 @@ class Declarative(object):
 
         initsolver = clingo.Control()
 
+        print(mfile)
         # load heuristic and instance
-        heuristic_program = open(hfile).read()
-        instance_program = open(ifile).read()
-
         self.__program = []
         self.__external_sigs = []
         self.__result_sigs = []
         self.__some_location = None
 
-        clingo.parse_program(heuristic_program, self.__process_hprog)
-        clingo.parse_program(instance_program, lambda a:
-                self.__program.append(a))
+        clingo.parse_program(mfile, self.__process_hprog)
+        # clingo.parse_program(instance_program, lambda a:
+                # self.__program.append(a))
 
         # define mappings
         self.__externals = dict()
@@ -228,3 +226,25 @@ class Declarative(object):
                     self.__impossible.remove(a)
             except KeyError:
                 pass
+
+class HeuristicSplitter(object):
+    def __init__(self, mfile):
+        super(HeuristicSplitter, self).__init__()
+        prog = open(mfile).read()
+        
+        self.base_program = []
+        self.heuristic_program = []
+        self.last_p = "base"
+        clingo.parse_program(prog, self.__split)
+
+    def get_heuristic_str(self):
+        return "\n".join(self.heuristic_program)
+
+    def __split(self, a):
+        if a.type == clingo.ast.ASTType.Program:
+            self.last_p = str(a.name)
+        else:
+            if self.last_p == "dynamic_heuristic":
+                self.heuristic_program.append(str(a))
+            else:
+                self.base_program.append(a)
