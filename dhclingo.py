@@ -25,10 +25,6 @@ class Declarative(object):
         self.__bodies = set()
 
         clingo.parse_program(mfile, self.__process_hprog)
-        print self.__heads
-        print self.__bodies
-        # clingo.parse_program(instance_program, lambda a:
-                # self.__program.append(a))
 
         # define mappings
         self.__externals = dict()
