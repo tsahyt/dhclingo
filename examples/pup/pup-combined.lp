@@ -39,8 +39,8 @@ visitedBefore(A,Z,O) :- orderStep(O), visitedAt(A,Z,P), O > P.
 #external unit2sensor(U,S).
 #external visitedAt(A,X,O).
 
-#const unitCap = 2.
-#const interUnitCap = 2.
+% #const unitCap = 2.
+% #const interUnitCap = 2.
 
 unit(U) :- comUnit(U).
 zone(Z) :- zone2sensor(Z,S).
