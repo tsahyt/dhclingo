@@ -107,7 +107,6 @@ class Declarative(object):
                             and len(x.arguments) == 4]
                     xs_s = sorted(sorted(xs), key=self.__level_weight)
                     self.__offline_decisions = xs_s
-                    print self.__offline_decisions
                 except StopIteration:
                     hlog.warning("found no model!")
 
