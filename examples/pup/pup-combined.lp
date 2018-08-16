@@ -1,7 +1,5 @@
 % Main ---------------------------------------------------------------------------
 #program base.
-#const unitCap = 2.
-#const interUnitCap = 2.
 
 zone(Z) :- zone2sensor(Z,S).
 sensor(S) :- zone2sensor(Z,S).
@@ -9,12 +7,12 @@ unit(U) :- comUnit(U).
 
 1 { unit2zone(U,Z) : unit(U) } 1 :- zone(Z).
 1 { unit2sensor(U,S) : unit(U) } 1 :- sensor(S).
-:- unit(U), unitCap+1 { unit2zone(U,Z) : zone(Z) }.
-:- unit(U), unitCap+1 { unit2sensor(U,S) : sensor(S) }.
+:- unit(U), 3 { unit2zone(U,Z) : zone(Z) }.
+:- unit(U), 3 { unit2sensor(U,S) : sensor(S) }.
 
 partnerunits(U,P) :- unit2zone(U,Z), zone2sensor(Z,S), unit2sensor(P,S), U != P.
 partnerunits(U,P) :- partnerunits(P,U), unit(U), unit(P).
-:- unit(U), interUnitCap+1 { partnerunits(U,P) : unit(P) }.
+:- unit(U), maxPU(M), M+1 { partnerunits(U,P) : unit(P) }.
 
 % Heuristic Base -----------------------------------------------------------------
 #program base_heuristic.
@@ -39,15 +37,12 @@ visitedBefore(A,Z,O) :- orderStep(O), visitedAt(A,Z,P), O > P.
 #external unit2sensor(U,S).
 #external visitedAt(A,X,O).
 
-% #const unitCap = 2.
-% #const interUnitCap = 2.
-
 unit(U) :- comUnit(U).
 zone(Z) :- zone2sensor(Z,S).
 sensor(S) :- zone2sensor(Z,S).
 
-unitUsedAllZones(U) :- unitCap { unit2zone(U,Z) : zone(Z) }, unit(U).
-unitUsedAllSensors(U) :- unitCap { unit2sensor(U,S) : sensor(S) }, unit(U).
+unitUsedAllZones(U) :- 2 { unit2zone(U,Z) : zone(Z) }, unit(U).
+unitUsedAllSensors(U) :- 2 { unit2sensor(U,S) : sensor(S) }, unit(U).
 usedUnit(U) :- unitUsedAllZones(U), unitUsedAllSensors(U).
 availableUnit(U) :- not usedUnit(U), unit(U).
 

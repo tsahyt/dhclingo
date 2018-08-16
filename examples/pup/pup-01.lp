@@ -1,4 +1,5 @@
 comUnit(1..3).
+maxPU(2).
 
 zone2sensor(1,1).
 zone2sensor(2,1).
