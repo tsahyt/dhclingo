@@ -6,7 +6,7 @@
 % Heuristic ----------------------------------------------------------------------
 #program dynamic_heuristic.
 
-#external place(I,B) : item(I,_), bin(B).
+#external place(I,B).
 
 placed(I) :- place(I,_).
 

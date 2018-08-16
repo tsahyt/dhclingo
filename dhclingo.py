@@ -48,7 +48,6 @@ class Declarative(object):
 
     def __process_hprog(self, a):
         self.__collect_watches(self, a)
-        self.__collect_facts(a)
 
         if a.type == clingo.ast.ASTType.Heuristic:
             l = a.location
@@ -78,27 +77,6 @@ class Declarative(object):
             name = a.atom.term.name
             arity = len(a.atom.term.arguments)
             self.__result_sigs.append((name,arity))
-
-    def __collect_facts(self, a):
-        if a.type == clingo.ast.ASTType.SymbolicAtom:
-            name = a.term.name
-            arity = len(a.term.arguments)
-            return set([(name, arity)])
-        elif a.type == clingo.ast.ASTType.Literal:
-            return self.__collect_facts(a.atom)
-        elif a.type == clingo.ast.ASTType.Rule:
-            # obtain head atoms
-            hs = self.__collect_facts(a.head)
-            self.__heads |= hs
-
-            # obtain body atoms
-            for b in a.body:
-                bs = self.__collect_facts(b)
-                self.__bodies |= bs
-        elif a.type == clingo.ast.ASTType.Aggregate:
-            return set([ x for x in map(self.__collect_facts, a.elements) ])
-        else:
-            hlog.debug("Unhandled AST type {}".format(a.type))
 
     def __make_step_solver(self):
         stepsolver = clingo.Control()
@@ -202,8 +180,6 @@ class Declarative(object):
             return None
 
     def init(self, init):
-        fact_sigs = self.__bodies - (self.__heads | set(self.__external_sigs) |
-                set(self.__result_sigs))
         for a in init.symbolic_atoms:
             name = a.symbol.name
             alen = len(a.symbol.arguments)
@@ -229,7 +205,7 @@ class Declarative(object):
                 except KeyError:
                     self.__lit_ress[alit] = set([f])
                 self.__remember_watch(alit, f)
-            if (name, alen) in fact_sigs:
+            if a.is_fact:
                 self.__add_fact(a.symbol)
 
     def __add_fact(self, symbol):
