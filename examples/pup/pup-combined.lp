@@ -18,17 +18,15 @@ partnerunits(U,P) :- partnerunits(P,U), unit(U), unit(P).
 #program base_heuristic.
 maxOrdinal(X) :- X = Z + S, Z = #max { A : zone(A) }, 
     S = #max { A : sensor(A) }.
-orderStep(1..X) :- maxOrdinal(X).
+step(0..M) :- maxOrdinal(M).
 
 1 { source(Z) : zone(Z) } 1.
 
 visitedAt(z,Z,1) :- source(Z).
-visitedAt(s,S,O) :- visitedAt(z,Z,O-1), orderStep(O), 
-    zone2sensor(Z,S), not visitedBefore(s,S,O).
-visitedAt(z,Z,O) :- visitedAt(s,S,O-1), orderStep(O), 
-    zone2sensor(Z,S), not visitedBefore(z,Z,O).
-
-visitedBefore(A,Z,O) :- orderStep(O), visitedAt(A,Z,P), O > P.
+visitedAt(s,Y,N+1) :- visitedAt(z,X,N), zone2sensor(X,Y), maxOrdinal(M), 
+    N<M, not step(K) : visitedAt(s,Y,K), K<N.
+visitedAt(z,Y,N+1) :- visitedAt(s,X,N), zone2sensor(Y,X), maxOrdinal(M), 
+    N<M, not step(K) : visitedAt(z,Y,K), K<N.
 
 % Heuristic Dynamic --------------------------------------------------------------
 #program dynamic_heuristic.
