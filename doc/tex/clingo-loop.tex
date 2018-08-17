@@ -1,0 +1,24 @@
+\begin{algorithm}
+    \SetKwData{Vsids}{vsids}
+    \SetKwFunction{ComputeVsidsLiteral}{ComputeVsidsLiteral}
+    \SetKwFunction{CallExternalHeuristic}{CallExternalHeuristic}
+    \SetKwFunction{AnalyzeConflict}{AnalyzeConflict}
+    \SetKwFunction{Backjump}{Backjump}
+    \emph{initialize}\;
+    \Repeat{model found}{
+        \emph{propagate} completion, loop, and recorded nogoods\;
+        \eIf{no conflict}{
+            \If{not all variables assigned $\wedge$ no nogood recorded}{
+            \Vsids $\leftarrow$ \ComputeVsidsLiteral{}\;
+            \Return{\CallExternalHeuristic{\Vsids}}\;
+            }
+        }
+        {
+            \eIf{conflict on top level}{\Return{unsatisfiable}}
+            {
+                \AnalyzeConflict{conflict}\;
+                \Backjump\;
+            }
+        }
+    }
+\end{algorithm}

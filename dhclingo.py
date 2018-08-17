@@ -184,6 +184,7 @@ class Declarative(object):
             name = a.symbol.name
             alen = len(a.symbol.arguments)
             lit = init.solver_literal(a.literal)
+            # hlog.debug("symbol {}: {}".format(a.symbol, lit))
             if (name, alen) in self.__external_sigs:
                 # watch in main
                 init.add_watch(lit)
@@ -221,17 +222,22 @@ class Declarative(object):
         self.__program.append(rule)
 
     def propagate(self, ctl, changes):
-        #hlog.debug("propagate {}".format(changes))
+        hlog.debug("propagate {}".format(changes))
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
             try:
                 for a in self.__lit_ress[abs(l)]:
+                    if l < 0:
+                        hlog.debug("propagate -{} ({})".format(a,l))
+                    else:
+                        hlog.debug("propagate {} ({})".format(a,l))
                     self.__impossible.add(a)
             except KeyError:
                 pass
 
     def undo(self, thread_id, assign, changes):
+        hlog.debug("undo {}".format(changes))
         self.__offline_decisions = []
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
