@@ -1,0 +1,44 @@
+\begin{algorithm}
+    \SetKwProg{Fn}{Function}{ is}{end} 
+    \SetKwData{Vsids}{vsids}
+    \SetKwData{Decisions}{decisions}
+    \SetKwFunction{Decide}{decide}
+    \SetKwFunction{MakeDecision}{makeDecision}
+    \Fn{\Decide{\Vsids}}{
+        \Switch{decision mode}{
+            \uCase{online}{
+                initialize solver with heuristic program\;
+                $m \leftarrow$ first model\;
+                $d \leftarrow$ heuristic atoms in $m$\;
+                $\ell \leftarrow$ literal corresponding to best decision in $d$\;
+                \Return{$\ell$}
+            }
+            \uCase{offline}{
+                \If{\Decisions = $\emptyset$}{
+                    initialize solver with heuristic program\;
+                    $m \leftarrow$ first model\;
+                    \Decisions $=$ sorted heuristic atoms in $m$\;
+                }
+                \While{\Decisions $\neq \emptyset$}{
+                    $d \leftarrow$ \Decisions.pop()\;
+                    \lIf{$d$ not marked untouchable}{\Return \MakeDecision{$d$,\Vsids}}
+                }
+                \Return \Vsids
+            }
+            \lCase{resigned}{\Return \Vsids}
+        }
+    }
+    \Fn{\MakeDecision{heuristic atom $h$, \Vsids}}{
+        \Switch{atom in $h$}{
+            \uCase{"vsids"}{\Return{\Vsids}}
+            \Case{"resign"}{
+                set decision mode to resigned\;
+                \Return{\Vsids}
+            }
+            \Other{
+                $\ell \leftarrow$ literal corresponding to atom and sign in $h$\;
+                \Return{$\ell$}
+            }
+        }
+    }
+\end{algorithm}

@@ -1,0 +1,30 @@
+\begin{algorithm}
+    \SetKwData{Decisions}{decisions}
+    \SetKwData{Signature}{signature}
+    \SetKwProg{Fn}{Function}{ is}{end} 
+    \Fn{init}{
+        \For{$a \in$ symbolic atoms}{
+            \Signature $\leftarrow$ signature of $a$\;
+            $\ell \leftarrow$ solver literal of $a$\;
+            \If{\Signature matches some watched or result signature}{
+                register watch for $\ell$\;
+            }
+            \If{$a$ is a fact}{
+                append $a$ to heuristic program\;
+            }
+        }
+    }
+    \Fn{propagate(changes)}{
+        \For{$l \in$ changes} {
+            update internal assignment value for $l$\;
+            mark $l$ as untouchable\;
+        }
+    }
+    \Fn{undo}{
+        \Decisions = $\emptyset$\;
+        \For{$l \in$ changes} {
+            update internal assignment value for $l$\;
+            mark $l$ as untouchable\;
+        }
+    }
+\end{algorithm}
