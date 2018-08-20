@@ -8,16 +8,18 @@
         \Switch{decision mode}{
             \uCase{online}{
                 initialize solver with heuristic program\;
-                $m \leftarrow$ first model\;
-                $d \leftarrow$ heuristic atoms in $m$\;
+                ground and solve heuristic program\;
+                let $m = $ first model of heuristic\;
+                $d \leftarrow$ \texttt{heuristic/4} atoms in $m$\;
                 $\ell \leftarrow$ literal corresponding to best decision in $d$\;
                 \Return{$\ell$}
             }
             \uCase{offline}{
                 \If{\Decisions = $\emptyset$}{
                     initialize solver with heuristic program\;
-                    $m \leftarrow$ first model\;
-                    \Decisions $=$ sorted heuristic atoms in $m$\;
+                    ground and solve heuristic program\;
+                    let $m = $ first model of heuristic\;
+                    \Decisions $=$ sorted \texttt{heuristic/4} atoms in $m$\;
                 }
                 \While{\Decisions $\neq \emptyset$}{
                     $d \leftarrow$ \Decisions.pop()\;
