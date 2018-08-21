@@ -4,6 +4,7 @@
 import clingo
 import logging
 import time
+import copy
 
 hlog = logging.getLogger("heuristic")
 logging.basicConfig(level=logging.DEBUG)
@@ -113,6 +114,9 @@ class Declarative(object):
                 except StopIteration:
                     hlog.warning("found no model!")
 
+        queue = copy.copy(self.__offline_decisions)
+        queue.reverse()
+        hlog.debug("queue: {}".format(queue))
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
             if str(d.arguments[0]) not in self.__impossible:
