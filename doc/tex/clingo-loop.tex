@@ -1,6 +1,6 @@
 \begin{algorithm}
-    \SetKwData{Vsids}{vsids}
-    \SetKwFunction{ComputeVsidsLiteral}{ComputeVsidsLiteral}
+    \SetKwData{SolverLit}{solverChoice}
+    \SetKwFunction{ComputeSolverHeuristic}{ComputeSolverHeuristic}
     \SetKwFunction{CallExternalHeuristic}{CallExternalHeuristic}
     \SetKwFunction{AnalyzeConflict}{AnalyzeConflict}
     \SetKwFunction{Backjump}{Backjump}
@@ -9,8 +9,8 @@
         \emph{propagate} completion, loop, and recorded nogoods\;
         \eIf{no conflict}{
             \If{not all variables assigned $\wedge$ no nogood recorded}{
-            \Vsids $\leftarrow$ \ComputeVsidsLiteral{}\;
-            \Return{\CallExternalHeuristic{\Vsids}}\;
+            \SolverLit $\leftarrow$ \ComputeSolverHeuristic{}\;
+            \Return{\CallExternalHeuristic{\SolverLit}}\;
             }
         }
         {

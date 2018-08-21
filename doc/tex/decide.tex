@@ -1,10 +1,10 @@
 \begin{algorithm}
     \SetKwProg{Fn}{Function}{ is}{end} 
-    \SetKwData{Vsids}{vsids}
+    \SetKwData{SolverLit}{solverChoice}
     \SetKwData{Decisions}{decisions}
     \SetKwFunction{Decide}{decide}
     \SetKwFunction{MakeDecision}{makeDecision}
-    \Fn{\Decide{\Vsids}}{
+    \Fn{\Decide{\SolverLit}}{
         \Switch{decision mode}{
             \uCase{online}{
                 initialize solver with heuristic program\;
@@ -23,19 +23,19 @@
                 }
                 \While{\Decisions $\neq \emptyset$}{
                     $d \leftarrow$ \Decisions.pop()\;
-                    \lIf{$d$ not marked untouchable}{\Return \MakeDecision{$d$,\Vsids}}
+                    \lIf{$d$ not marked untouchable}{\Return \MakeDecision{$d$,\SolverLit}}
                 }
-                \Return \Vsids
+                \Return \SolverLit
             }
-            \lCase{resigned}{\Return \Vsids}
+            \lCase{resigned}{\Return \SolverLit}
         }
     }
-    \Fn{\MakeDecision{heuristic atom $h$, \Vsids}}{
+    \Fn{\MakeDecision{heuristic atom $h$, \SolverLit}}{
         \Switch{atom in $h$}{
-            \uCase{"vsids"}{\Return{\Vsids}}
+            \uCase{"vsids"}{\Return{\SolverLit}}
             \Case{"resign"}{
                 set decision mode to resigned\;
-                \Return{\Vsids}
+                \Return{\SolverLit}
             }
             \Other{
                 $\ell \leftarrow$ literal corresponding to atom and sign in $h$\;
