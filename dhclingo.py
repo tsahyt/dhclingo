@@ -230,7 +230,7 @@ class Declarative(object):
 
     def propagate(self, ctl, changes):
         hlog.debug("propagate {}".format(changes))
-        if -self.__last_decision in changes:
+        if self.__last_decision and -self.__last_decision in changes:
             hlog.debug("one-step backtracking detected, erasing cached decisions")
             self.__offline_decisions = []
         for l in changes:

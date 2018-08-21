@@ -21,12 +21,11 @@ maxOrdinal(X) :- X = Z + S, Z = #max { A : zone(A) },
 step(0..M) :- maxOrdinal(M).
 
 1 { source(Z) : zone(Z) } 1.
+%source(1).
 
 visitedAt(z,Z,1) :- source(Z).
-visitedAt(s,Y,N+1) :- visitedAt(z,X,N), zone2sensor(X,Y), maxOrdinal(M), 
-    N<M, not step(K) : visitedAt(s,Y,K), K<N.
-visitedAt(z,Y,N+1) :- visitedAt(s,X,N), zone2sensor(Y,X), maxOrdinal(M), 
-    N<M, not step(K) : visitedAt(z,Y,K), K<N.
+visitedAt(s,Y,N+1) :- visitedAt(z,X,N), zone2sensor(X,Y), maxOrdinal(M), N<M, not step(K) : visitedAt(s,Y,K), K<N.
+visitedAt(z,Y,N+1) :- visitedAt(s,X,N), zone2sensor(Y,X), maxOrdinal(M), N<M, not step(K) : visitedAt(z,Y,K), K<N.
 
 % Heuristic Dynamic --------------------------------------------------------------
 #program dynamic_heuristic.
