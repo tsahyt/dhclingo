@@ -1,6 +1,7 @@
 \begin{algorithm}
     \SetKwData{Decisions}{decisions}
     \SetKwData{Signature}{signature}
+    \SetKwData{LastDecision}{lastDecision}
     \SetKwProg{Fn}{Function}{ is}{end} 
     \Fn{init}{
         \For{$a \in$ symbolic atoms}{
@@ -15,6 +16,7 @@
         }
     }
     \Fn{propagate(changes)}{
+        \uIf{$-\LastDecision \in$ changes}{\Decisions = $\emptyset$}
         \For{$l \in$ changes} {
             update internal assignment value for $l$\;
             mark $l$ as untouchable\;

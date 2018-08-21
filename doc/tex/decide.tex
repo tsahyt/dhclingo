@@ -2,6 +2,7 @@
     \SetKwProg{Fn}{Function}{ is}{end} 
     \SetKwData{SolverLit}{solverChoice}
     \SetKwData{Decisions}{decisions}
+    \SetKwData{LastDecision}{lastDecision}
     \SetKwFunction{Decide}{decide}
     \SetKwFunction{MakeDecision}{makeDecision}
     \Fn{\Decide{\SolverLit}}{
@@ -11,8 +12,7 @@
                 ground and solve heuristic program\;
                 let $m = $ first model of heuristic\;
                 $d \leftarrow$ \texttt{heuristic/4} atoms in $m$\;
-                $\ell \leftarrow$ literal corresponding to best decision in $d$ not marked untouchable\;
-                \Return{$\ell$}
+                \Return{\MakeDecision{best decision in $d$, \SolverLit}}
             }
             \uCase{offline}{
                 \If{\Decisions = $\emptyset$}{
@@ -32,13 +32,17 @@
     }
     \Fn{\MakeDecision{heuristic atom $h$, \SolverLit}}{
         \Switch{atom in $h$}{
-            \uCase{"vsids"}{\Return{\SolverLit}}
+            \Case{"vsids"}{
+                erase \LastDecision\;
+                \Return{\SolverLit}
+            }
             \Case{"resign"}{
                 set decision mode to resigned\;
                 \Return{\SolverLit}
             }
             \Other{
                 $\ell \leftarrow$ literal corresponding to atom and sign in $h$\;
+                \LastDecision $\leftarrow \ell$\;
                 \Return{$\ell$}
             }
         }
