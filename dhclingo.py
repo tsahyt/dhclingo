@@ -39,6 +39,8 @@ class Declarative(object):
         else:
             self.decide = self.__decide_online
 
+        self.__last_decision = None
+
     def __remember_watch(self, alit, f):
         self.__res_lits[str(f)] = alit
         try:
@@ -95,6 +97,7 @@ class Declarative(object):
         return vsids
     
     def __decide_offline(self, vsids):
+        self.__last_decision = None
         if not self.__offline_decisions:
             stepsolver = self.__make_step_solver()
             with stepsolver.solve(yield_=True) as handle:
@@ -120,6 +123,7 @@ class Declarative(object):
     def __decide_online(self,vsids):
         t0 = time.time()
         stepsolver = self.__make_step_solver()
+        self.__last_decision = None
         with stepsolver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
@@ -149,14 +153,17 @@ class Declarative(object):
         lit = self.__res_lits[str(atom)]
         hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
         if str(decision[3]) == "true":
+            self.__last_decision = lit
             return lit
         elif str(decision[3]) == "false":
+            self.__last_decision = -lit
             return -lit
         else:
             hlog.warning(
                     "Invalid modifier {}! Defaulting to true".format(
                         decision[3]))
-        return lit
+            self.__last_decision = None
+            return vsids
 
     def __level_weight(self, a):
         weight = int(str(a.arguments[1]))
@@ -223,6 +230,9 @@ class Declarative(object):
 
     def propagate(self, ctl, changes):
         hlog.debug("propagate {}".format(changes))
+        if -self.__last_decision in changes:
+            hlog.debug("one-step backtracking detected, erasing cached decisions")
+            self.__offline_decisions = []
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
