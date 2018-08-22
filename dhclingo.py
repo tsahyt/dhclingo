@@ -98,8 +98,8 @@ class Declarative(object):
         return vsids
     
     def __decide_offline(self, vsids):
-        hlog.debug("decide called")
         self.__last_decision = None
+        self.__offline_decisions = filter(lambda x: str(x.arguments[0]) not in self.__impossible, self.__offline_decisions)
         if not self.__offline_decisions:
             stepsolver = self.__make_step_solver()
             with stepsolver.solve(yield_=True) as handle:
@@ -115,15 +115,12 @@ class Declarative(object):
                 except StopIteration:
                     hlog.warning("found no model!")
 
-        # queue = copy.copy(self.__offline_decisions)
-        # queue.reverse()
-        # hlog.debug("queue: {}".format(queue))
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
             if str(d.arguments[0]) not in self.__impossible:
                 return self.__make_decision(vsids, d)
 
-        hlog.debug("offline heuristic ran out of decisions, using vsids literal {}".format(vsids))
+        hlog.warning("offline heuristic ran out of decisions, using vsids literal {}".format(vsids))
         return vsids
 
     def __decide_online(self,vsids):
@@ -239,7 +236,7 @@ class Declarative(object):
         hlog.debug("propagate {}".format(changes))
         if self.__last_decision and -self.__last_decision in changes:
             hlog.debug("one-step backtracking detected, erasing cached decisions")
-            self.__offline_decisions = []
+        #     self.__offline_decisions = []
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
