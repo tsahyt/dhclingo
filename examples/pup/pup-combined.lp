@@ -33,6 +33,9 @@ visitedAt(z,Y,N+1) :- visitedAt(s,X,N), zone2sensor(Y,X), maxOrdinal(M), N<M, no
 #external unit2zone(U,Z).
 #external unit2sensor(U,S).
 #external visitedAt(A,X,O).
+#external partnerunits(U,P).
+
+#heuristic partnerunits(U,P) : partnerunits(U,P). [-1000@-1000, true]
 
 unit(U) :- comUnit(U).
 zone(Z) :- zone2sensor(Z,S).

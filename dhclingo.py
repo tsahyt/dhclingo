@@ -98,6 +98,7 @@ class Declarative(object):
         return vsids
     
     def __decide_offline(self, vsids):
+        hlog.debug("decide called")
         self.__last_decision = None
         if not self.__offline_decisions:
             stepsolver = self.__make_step_solver()
@@ -114,17 +115,19 @@ class Declarative(object):
                 except StopIteration:
                     hlog.warning("found no model!")
 
-        queue = copy.copy(self.__offline_decisions)
-        queue.reverse()
-        hlog.debug("queue: {}".format(queue))
+        # queue = copy.copy(self.__offline_decisions)
+        # queue.reverse()
+        # hlog.debug("queue: {}".format(queue))
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
             if str(d.arguments[0]) not in self.__impossible:
                 return self.__make_decision(vsids, d)
 
+        hlog.debug("offline heuristic ran out of decisions, using vsids literal {}".format(vsids))
         return vsids
 
     def __decide_online(self,vsids):
+        hlog.debug("decide called")
         t0 = time.time()
         stepsolver = self.__make_step_solver()
         self.__last_decision = None
