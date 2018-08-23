@@ -44,7 +44,6 @@ maxOrdinal(X) :- numb(z,N), numb(d,M), X = N + M.
 step(0..M) :- maxOrdinal(M).
 
 1 { source(Z) : elem(z,Z) } 1.
-%source(1).
 
 visitedAt(z,Z,1) :- source(Z).
 visitedAt(d,Y,N+1) :- visitedAt(z,X,N), zone2sensor(X,Y), maxOrdinal(M), N<M, not step(K) : visitedAt(d,Y,K), K<N.
@@ -60,6 +59,8 @@ visitedAt(z,Y,N+1) :- visitedAt(d,X,N), zone2sensor(Y,X), maxOrdinal(M), N<M, no
 usedUnit(U) :- unit2zone(U,Z).
 usedUnit(U) :- unit2sensor(U,S).
 freeUnit(U) :- not usedUnit(U), comUnit(U).
+
+#heuristic gt(A,X,U) : gt(A,X,U). [-1000@-1000, true]
 
 % New Unit
 #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), freeUnit(U). [-U@-L, true]
