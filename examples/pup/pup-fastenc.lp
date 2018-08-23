@@ -1,8 +1,8 @@
 % Main ---------------------------------------------------------------------------
 #program base.
 
-elem(z,Z) :- zone2sensor(Z,D).
-elem(d,D) :- zone2sensor(Z,D).
+elem(z,Z) :- zone2sensor(Z,_).
+elem(d,D) :- zone2sensor(_,D).
 
 numb(A,N) :- elem(A,N), not elem(A,N+1).
 
