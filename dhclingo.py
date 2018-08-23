@@ -7,10 +7,10 @@ import time
 import copy
 
 hlog = logging.getLogger("heuristic")
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 class Declarative(object):
-    def __init__(self, mfile, offline):
+    def __init__(self, mfile, offline, btrack):
         super(Declarative, self).__init__()
 
         initsolver = clingo.Control()
@@ -39,6 +39,8 @@ class Declarative(object):
             self.__offline_decisions = []
         else:
             self.decide = self.__decide_online
+
+        self.__btrack = btrack
 
         self.__last_decision = None
 
@@ -234,9 +236,9 @@ class Declarative(object):
 
     def propagate(self, ctl, changes):
         hlog.debug("propagate {}".format(changes))
-        if self.__last_decision and -self.__last_decision in changes:
+        if self.__btrack and self.__last_decision and -self.__last_decision in changes:
             hlog.debug("one-step backtracking detected, erasing cached decisions")
-        #     self.__offline_decisions = []
+            self.__offline_decisions = []
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
