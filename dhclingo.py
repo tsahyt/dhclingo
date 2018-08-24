@@ -8,7 +8,9 @@ import copy
 import os
 
 hlog = logging.getLogger("heuristic")
-if "DEBUG" in os.environ.keys() and os.environ["DEBUG"] == '1':
+if "LOG" in os.environ.keys() and os.environ["LOG"] == '1':
+    logging.basicConfig(level=logging.INFO)
+elif "LOG" in os.environ.keys() and os.environ["LOG"] == '2':
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.ERROR)
@@ -17,7 +19,7 @@ class Declarative(object):
     def __init__(self, mfile, offline, btrack):
         super(Declarative, self).__init__()
 
-        initsolver = clingo.Control()
+        self.__stats = Statistics()
 
         # load heuristic and instance
         self.__program = []
@@ -91,15 +93,18 @@ class Declarative(object):
     def __make_step_solver(self):
         stepsolver = clingo.Control()
         hlog.debug("building heuristic program")
+        facts = 0
         with stepsolver.builder() as b:
             for stmt in self.__program:
                 b.add(stmt)
             for e in self.__externals:
                 if self.__externals[e] == True: 
                     clingo.parse_program("{}.".format(e), lambda a: b.add(a))
+                    facts += 1
             for p in self.__persisted:
-                hlog.debug("extending via persisted {}".format(p))
                 clingo.parse_program("{}.".format(p), lambda a: b.add(a))
+                facts += 1
+        hlog.info("heuristic program with {} added facts".format(facts))
         hlog.debug("grounding heuristic program")
         stepsolver.ground([("base",[])])
         return stepsolver
@@ -120,6 +125,7 @@ class Declarative(object):
                 str(x.arguments[0]) not in self.__impossible, 
                 self.__offline_decisions)
         if not self.__offline_decisions:
+            t0 = time.time()
             stepsolver = self.__make_step_solver()
             with stepsolver.solve(yield_=True) as handle:
                 try:
@@ -131,6 +137,8 @@ class Declarative(object):
                             if x.name == "_heuristic" 
                             and len(x.arguments) == 4]
                     xs_s = sorted(sorted(xs), key=self.__level_weight)
+                    t1 = time.time()
+                    hlog.info("{} offline decisions took {}s".format(len(xs_s), t1 - t0))
                     self.__offline_decisions = xs_s
                 except StopIteration:
                     hlog.warning("found no model!")
@@ -144,7 +152,6 @@ class Declarative(object):
         return vsids
 
     def __decide_online(self,vsids):
-        hlog.debug("decide called")
         t0 = time.time()
         stepsolver = self.__make_step_solver()
         self.__last_decision = None
@@ -152,8 +159,9 @@ class Declarative(object):
             try:
                 model = handle.next()
                 self.__persist(model)
-                t1 = time.time()
                 decision = self.__find_heuristic_atom(model)
+                t1 = time.time()
+                hlog.info("online decision took {}s".format(t1 - t0))
                 if decision:
                     return self.__make_decision(vsids, decision)
                 else:
@@ -214,7 +222,6 @@ class Declarative(object):
             name = a.symbol.name
             alen = len(a.symbol.arguments)
             lit = init.solver_literal(a.literal)
-            # hlog.debug("symbol {}: {}".format(a.symbol, lit))
             if (name, alen) in self.__external_sigs:
                 # watch in main
                 init.add_watch(lit)
@@ -253,10 +260,11 @@ class Declarative(object):
 
     def propagate(self, ctl, changes):
         hlog.debug("propagate {}".format(changes))
-        if (self.__btrack and self.__last_decision and -self.__last_decision in
-                changes):
-            hlog.debug("one-step backtracking detected, clearing cache")
-            self.__offline_decisions = []
+        if self.__last_decision and -self.__last_decision in changes:
+            self.__stats.onestep()
+            if self.__btrack:
+                hlog.debug("clearing cache")
+                self.__offline_decisions = []
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
                 self.__externals[e] = ctl.assignment.is_true(abs(l))
@@ -282,6 +290,10 @@ class Declarative(object):
             except KeyError:
                 pass
 
+    def check(self, a):
+        hlog.info("statistics: one step backtrackings: {}".format(
+            self.__stats.get_onestep()))
+
 class HeuristicSplitter(object):
     def __init__(self, mfile):
         super(HeuristicSplitter, self).__init__()
@@ -303,3 +315,13 @@ class HeuristicSplitter(object):
                 self.heuristic_program.append(str(a))
             else:
                 self.base_program.append(a)
+
+class Statistics(object):
+    def __init__(self):
+        self.__onestep = 0
+        
+    def onestep(self):
+        self.__onestep += 1
+
+    def get_onestep(self):
+        return self.__onestep
