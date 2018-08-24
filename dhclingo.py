@@ -123,7 +123,6 @@ class Declarative(object):
                 try:
                     hlog.debug("solving for heuristic")
                     model = handle.next()
-                    hlog.debug("model {}".format(model))
                     self.__persist(model)
                     hlog.debug("solving done")
                     xs = [x for x in model.symbols(atoms=True) 
@@ -152,8 +151,6 @@ class Declarative(object):
                 model = handle.next()
                 self.__persist(model)
                 t1 = time.time()
-                # hlog.debug("step solver created and solved in {} s".format(t1 - t0))
-                # hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 if decision:
                     return self.__make_decision(vsids, decision)

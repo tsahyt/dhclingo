@@ -63,4 +63,6 @@ preferredUnit(s,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2)
 
 % if no source is known, pick the lexicographically smallest possible
 sourced :- source(X).
-#heuristic source(Z) : zone(Z), not sourced. [-Z@0, true]
+persist(usedSource(X)) :- source(X).
+
+#heuristic source(Z) : zone(Z), not sourced, not usedSource(Z). [-Z@0, true]
