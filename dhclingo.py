@@ -5,9 +5,13 @@ import clingo
 import logging
 import time
 import copy
+import os
 
 hlog = logging.getLogger("heuristic")
-logging.basicConfig(level=logging.DEBUG)
+if "DEBUG" in os.environ.keys() and os.environ["DEBUG"] == '1':
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.ERROR)
 
 class Declarative(object):
     def __init__(self, mfile, offline, btrack):
