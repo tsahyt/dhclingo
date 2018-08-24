@@ -5,12 +5,14 @@
     \SetKwData{LastDecision}{lastDecision}
     \SetKwFunction{Decide}{decide}
     \SetKwFunction{MakeDecision}{makeDecision}
+    \SetKwFunction{Persist}{persist}
     \Fn{\Decide{\SolverLit}}{
         \Switch{decision mode}{
             \uCase{online}{
                 initialize solver with heuristic program\;
                 ground and solve heuristic program\;
                 let $m = $ first model of heuristic\;
+                \Persist{\texttt{\_persist/1} atoms in $m$}\;
                 $d \leftarrow$ \texttt{\_heuristic/4} atoms in $m$\;
                 \Return{\MakeDecision{best decision in $d$, \SolverLit}}
             }
@@ -19,6 +21,7 @@
                     initialize solver with heuristic program\;
                     ground and solve heuristic program\;
                     let $m = $ first model of heuristic\;
+                    \Persist{\texttt{\_persist/1} atoms in $m$}\;
                     \Decisions $=$ sorted \texttt{\_heuristic/4} atoms in $m$\;
                 }
                 \While{\Decisions $\neq \emptyset$}{
