@@ -112,6 +112,12 @@ demand, and the complete results are cached. The atoms are sorted in accordance
 with their weight and level and the maximal atom w.r.t this ordering which is
 also compatible with the current assignment is returned to the main solver.
 
+Persistent derivations, defined via the `#persist` directive, are also
+transformed into normal rules. `#persist a : b.` is translated to `_persist(a)
+:- b.`. When a `_persist/1` predicate occurs in the heuristic model, the
+contained symbol will be added to a set from which facts will be drawn for
+future heuristic programs.
+
 # Case Studies
 
 ## Bin Packing
