@@ -11,7 +11,7 @@
                 initialize solver with heuristic program\;
                 ground and solve heuristic program\;
                 let $m = $ first model of heuristic\;
-                $d \leftarrow$ \texttt{heuristic/4} atoms in $m$\;
+                $d \leftarrow$ \texttt{\_heuristic/4} atoms in $m$\;
                 \Return{\MakeDecision{best decision in $d$, \SolverLit}}
             }
             \uCase{offline}{
@@ -19,7 +19,7 @@
                     initialize solver with heuristic program\;
                     ground and solve heuristic program\;
                     let $m = $ first model of heuristic\;
-                    \Decisions $=$ sorted \texttt{heuristic/4} atoms in $m$\;
+                    \Decisions $=$ sorted \texttt{\_heuristic/4} atoms in $m$\;
                 }
                 \While{\Decisions $\neq \emptyset$}{
                     $d \leftarrow$ \Decisions.pop()\;
@@ -32,11 +32,11 @@
     }
     \Fn{\MakeDecision{heuristic atom $h$, \SolverLit}}{
         \Switch{atom in $h$}{
-            \Case{"vsids"}{
+            \Case{"\_vsids"}{
                 erase \LastDecision\;
                 \Return{\SolverLit}
             }
-            \Case{"resign"}{
+            \Case{"\_resign"}{
                 set decision mode to resigned\;
                 \Return{\SolverLit}
             }

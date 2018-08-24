@@ -86,7 +86,7 @@ instances of Clingo. One instance represents the main program, whereas the
 other is used to calculate the heuristic. It dynamically creates a *heuristic
 program* from its inputs and the current assignment in the main solver. All
 `#heuristic` directives in the input heuristic program are rewritten to
-heuristic rules of the form `heuristic(head, W, L, S) :- body` where `W` is the
+heuristic rules of the form `_heuristic(head, W, L, S) :- body` where `W` is the
 weight, `L` the level, and `S` the sign as given by a heuristic directive
 `#heuristic head : body. [W@L,S]`.
 
