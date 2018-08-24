@@ -39,5 +39,5 @@ place(V,B,C) :- place(V,B,C,_).
 #heuristic bin(C,B,V) : place(V,B,C). [0@1, true]
 
 % Ultimately resign
-#heuristic resign. [0@0, true]
+#heuristic _resign. [0@0, true]
 

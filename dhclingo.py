@@ -67,7 +67,7 @@ class Declarative(object):
             
             hargs = [a.atom.term, bias, priority, mod]
             hatom = clingo.ast.SymbolicAtom(clingo.ast.Function(location=l, 
-                name="heuristic", arguments=hargs, external=False))
+                name="_heuristic", arguments=hargs, external=False))
             head = clingo.ast.Literal(location=l, sign=clingo.ast.Sign.NoSign, 
                     atom=hatom)
             rule = clingo.ast.Rule(location=l, head=head, body=a.body)
@@ -110,7 +110,7 @@ class Declarative(object):
     def __persist(self, model):
         xs = [x.arguments[0] 
                 for x in model.symbols(atoms=True)
-                if x.name == "persist"
+                if x.name == "_persist"
                 and len(x.arguments) == 1]
         self.__persisted |= set(map(str, xs))
     
@@ -128,7 +128,7 @@ class Declarative(object):
                     self.__persist(model)
                     hlog.debug("solving done")
                     xs = [x for x in model.symbols(atoms=True) 
-                            if x.name == "heuristic" 
+                            if x.name == "_heuristic" 
                             and len(x.arguments) == 4]
                     xs_s = sorted(sorted(xs), key=self.__level_weight)
                     self.__offline_decisions = xs_s
@@ -166,10 +166,10 @@ class Declarative(object):
     def __make_decision(self, vsids, decision):
         decision = decision.arguments
         atom = decision[0]
-        if str(atom) == "vsids":
+        if str(atom) == "_vsids":
             hlog.debug("heuristic request fallback")
             return vsids
-        if str(atom) == "resign":
+        if str(atom) == "_resign":
             hlog.debug("heuristic resigned, using vsids forever")
             self.decide = self.__resigned
             return vsids
@@ -199,7 +199,7 @@ class Declarative(object):
 
         :type model: clingo.Model
         """
-        syms = [x for x in model.symbols(atoms=True) if x.name == "heuristic"
+        syms = [x for x in model.symbols(atoms=True) if x.name == "_heuristic"
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
         syms = sorted(syms)

@@ -9,7 +9,7 @@
 
 hasA :- a(X).
 
-persist(used(X)) :- a(X).
+_persist(used(X)) :- a(X).
 
 #heuristic b : hasA. [0@0, true]
 #heuristic a(X) : not hasA, not used(X), X = 1..5. [-X@1, true]

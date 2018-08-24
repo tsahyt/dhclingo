@@ -1,1 +1,1 @@
-#heuristic vsids. [0@0, true]
+#heuristic _vsids. [0@0, true]
