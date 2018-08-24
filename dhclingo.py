@@ -37,6 +37,7 @@ class Declarative(object):
         self.__lit_ress = dict()
         self.__res_lits = dict()
         self.__impossible = set()
+        self.__persisted = set()
 
         if offline:
             self.decide = self.__decide_offline
@@ -96,12 +97,22 @@ class Declarative(object):
             for e in self.__externals:
                 if self.__externals[e] == True: 
                     clingo.parse_program("{}.".format(e), lambda a: b.add(a))
+            for p in self.__persisted:
+                hlog.debug("extending via persisted {}".format(p))
+                clingo.parse_program("{}.".format(p), lambda a: b.add(a))
         hlog.debug("grounding heuristic program")
         stepsolver.ground([("base",[])])
         return stepsolver
 
     def __resigned(self, vsids):
         return vsids
+
+    def __persist(self, model):
+        xs = [x.arguments[0] 
+                for x in model.symbols(atoms=True)
+                if x.name == "persist"
+                and len(x.arguments) == 1]
+        self.__persisted |= set(map(str, xs))
     
     def __decide_offline(self, vsids):
         self.__last_decision = None
@@ -112,6 +123,8 @@ class Declarative(object):
                 try:
                     hlog.debug("solving for heuristic")
                     model = handle.next()
+                    hlog.debug("model {}".format(model))
+                    self.__persist(model)
                     hlog.debug("solving done")
                     xs = [x for x in model.symbols(atoms=True) 
                             if x.name == "heuristic" 
@@ -137,6 +150,7 @@ class Declarative(object):
         with stepsolver.solve(yield_=True) as handle:
             try:
                 model = handle.next()
+                self.__persist(model)
                 t1 = time.time()
                 # hlog.debug("step solver created and solved in {} s".format(t1 - t0))
                 # hlog.debug("model: {}".format(model))
