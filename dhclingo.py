@@ -263,7 +263,7 @@ class Declarative(object):
         if self.__last_decision and -self.__last_decision in changes:
             self.__stats.onestep()
             if self.__btrack:
-                hlog.debug("clearing cache")
+                hlog.debug("clearing cache after one-step backtracking")
                 self.__offline_decisions = []
         for l in changes:
             for e in self.__lit_watches[abs(l)]:
@@ -318,6 +318,9 @@ class HeuristicSplitter(object):
 
 class Statistics(object):
     def __init__(self):
+        self.__onestep = 0
+
+    def clean(self):
         self.__onestep = 0
         
     def onestep(self):
