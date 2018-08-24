@@ -71,6 +71,16 @@ decided on by the heuristic. For example, consider
     #heuristic vsids. [0@0, true]
     ```
 
+The primitives introduced so far support the encoding of *stateless* heuristics,
+that is heuristics which depend only on the current assignment. Sometimes it is
+necessary to keep track of past decisions in the heuristic to inform the current
+decision. To facilitate this, we introduce a `persist` primitive. It takes the
+shape of a special directive `#persist a : b.` which states that `a` follows
+*persistently* from `b`. Once `a` has been derived persistently it will be added
+as a fact to the knowledge base of the heuristic, i.e. it will be true in all
+future invocations of the heuristic. We show a real world example of this
+mechanism in our case study on the Partner Units Problem below.
+
 Finally, we provide two modes of operation. The default mode is for the
 heuristic to operate as an *online* heuristic. This means that the heuristic is
 recalculated on every decision made by the solver. In contrast an *offline*
