@@ -194,6 +194,9 @@ the program.
         N<M, not step(K) : visitedAt(z,Y,K), K<N.
     ```
 
+For the `dynamic_heuristic` part we first define the predicates relevant to the
+heuristic.
+
     ```asp
     #program dynamic_heuristic.
     #external source(Z).
@@ -204,24 +207,37 @@ the program.
     unit(U) :- comUnit(U).
     zone(Z) :- zone2sensor(Z,S).
     sensor(S) :- zone2sensor(Z,S).
+    ```
 
+Next we define what it means for a unit to be used or free, or preferred.
+    ```asp
     usedUnit(U) :- unit2zone(U,Z).
     usedUnit(U) :- unit2sensor(U,S).
     freeUnit(U) :- not usedUnit(U), unit(U).
-
-    #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), freeUnit(U). [-U@-L, true]
-    #heuristic unit2sensor(U,S) : visitedAt(s,S,L), freeUnit(U). [-U@-L, true]
 
     preferredUnit(z,Z,U,1) :- unit2sensor(U,S), zone2sensor(Z,S).
     preferredUnit(s,S,U,1) :- unit2zone(U,Z), zone2sensor(Z,S).
     preferredUnit(z,Z,U,0) :- unit2zone(U,Z2), zone2sensor(Z,S), zone2sensor(Z2,S).
     preferredUnit(s,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2).
+    ```
 
+With the definitions above we can implement Pred as follows. An assignment from
+a unit to a zone or sensor is to be attempted first on a preferred unit, and
+otherwise on a new unit. All assignments respect the ordering defined by the
+`visitedAt/3` predicate.
+
+    ```asp
     #heuristic unit2zone(U,Z) : 
         visitedAt(z,Z,L), usedUnit(U), preferredUnit(z,Z,U,W). [W@-L, true]
     #heuristic unit2sensor(U,S) : 
         visitedAt(s,S,L), usedUnit(U), preferredUnit(s,S,U,W). [W@-L, true]
+    #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), freeUnit(U). [-U@-L, true]
+    #heuristic unit2sensor(U,S) : visitedAt(s,S,L), freeUnit(U). [-U@-L, true]
+    ```
 
+Finally we make sure that there is always a source for the ordering selected. We
+make this choice *persistent*, in order to not select the same source twice.
+    ```asp
     sourced :- source(X).
     #persist usedSource(X) : source(X).
 
