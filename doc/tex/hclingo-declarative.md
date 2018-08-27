@@ -154,4 +154,78 @@ preferred.
 
 ## Partner Units Problem
 
+    ```asp
+    #program base.
+
+    zone(Z) :- zone2sensor(Z,S).
+    sensor(S) :- zone2sensor(Z,S).
+    unit(U) :- comUnit(U).
+
+    1 { unit2zone(U,Z) : unit(U) } 1 :- zone(Z).
+    1 { unit2sensor(U,S) : unit(U) } 1 :- sensor(S).
+    :- unit(U), 3 { unit2zone(U,Z) : zone(Z) }.
+    :- unit(U), 3 { unit2sensor(U,S) : sensor(S) }.
+
+    partnerunits(U,P) :- unit2zone(U,Z), zone2sensor(Z,S), 
+        unit2sensor(P,S), U != P.
+    partnerunits(U,P) :- partnerunits(P,U), unit(U), unit(P).
+    :- unit(U), maxPU(M), M+1 { partnerunits(U,P) : unit(P) }.
+    ```
+
+We employ a variation of the QuickPup heuristic, which requires an ordering over
+the zones and sensors. The ordering can be obtained through a breadth-first
+exploration of the instance graph. It can stay fixed over many invocations of
+the heuristic. Therefore we do not want to recalculate it on every call to the
+heuristic. To solve this, we define the ordering in the `base_heuristic` part of
+the program.
+
+    ```asp
+    #program base_heuristic.
+    maxOrdinal(X) :- X = Z + S, Z = #max { A : zone(A) }, 
+        S = #max { A : sensor(A) }.
+    step(0..M) :- maxOrdinal(M).
+
+    1 { source(Z) : zone(Z) } 1.
+
+    visitedAt(z,Z,1) :- source(Z).
+    visitedAt(s,Y,N+1) :- visitedAt(z,X,N), zone2sensor(X,Y), maxOrdinal(M), 
+        N<M, not step(K) : visitedAt(s,Y,K), K<N.
+    visitedAt(z,Y,N+1) :- visitedAt(s,X,N), zone2sensor(Y,X), maxOrdinal(M), 
+        N<M, not step(K) : visitedAt(z,Y,K), K<N.
+    ```
+
+    ```asp
+    #program dynamic_heuristic.
+    #external source(Z).
+    #external unit2zone(U,Z).
+    #external unit2sensor(U,S).
+    #external visitedAt(A,X,O).
+
+    unit(U) :- comUnit(U).
+    zone(Z) :- zone2sensor(Z,S).
+    sensor(S) :- zone2sensor(Z,S).
+
+    usedUnit(U) :- unit2zone(U,Z).
+    usedUnit(U) :- unit2sensor(U,S).
+    freeUnit(U) :- not usedUnit(U), unit(U).
+
+    #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), freeUnit(U). [-U@-L, true]
+    #heuristic unit2sensor(U,S) : visitedAt(s,S,L), freeUnit(U). [-U@-L, true]
+
+    preferredUnit(z,Z,U,1) :- unit2sensor(U,S), zone2sensor(Z,S).
+    preferredUnit(s,S,U,1) :- unit2zone(U,Z), zone2sensor(Z,S).
+    preferredUnit(z,Z,U,0) :- unit2zone(U,Z2), zone2sensor(Z,S), zone2sensor(Z2,S).
+    preferredUnit(s,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2).
+
+    #heuristic unit2zone(U,Z) : 
+        visitedAt(z,Z,L), usedUnit(U), preferredUnit(z,Z,U,W). [W@-L, true]
+    #heuristic unit2sensor(U,S) : 
+        visitedAt(s,S,L), usedUnit(U), preferredUnit(s,S,U,W). [W@-L, true]
+
+    sourced :- source(X).
+    #persist usedSource(X) : source(X).
+
+    #heuristic source(Z) : zone(Z), not sourced, not usedSource(Z). [-Z@0, true]
+    ```
+
 ## Combined Configuration
