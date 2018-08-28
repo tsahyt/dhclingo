@@ -11,6 +11,8 @@ class Pred(object):
         super(Pred, self).__init__()
         self.__source = "z1"
         self.__instance = nx.Graph()
+        self.__impossible = set()
+        self.__lit_ress = dict()
         
     def init(self, init):
         for a in init.symbolic_atoms:
@@ -21,6 +23,10 @@ class Pred(object):
             if (str(a.symbol).startswith("unit2zone(")
                 or str(a.symbol).startswith("unit2sensor(")):
                 l = init.solver_literal(a.literal)
+                try:
+                    self.__lit_ress[abs(l)].add(str(a.symbol))
+                except KeyError:
+                    self.__lit_ress[abs(l)] = set([str(a.symbol)])
                 init.add_watch(l)
 
     def bf_ordering(self, start):
@@ -38,19 +44,14 @@ class Pred(object):
 
     def propagate(self, ctl, changes):
         for l in changes:
-            for e in self.__lit_watches[abs(l)]:
-                self.__externals[e] = ctl.assignment.is_true(abs(l))
             try:
                 for a in self.__lit_ress[abs(l)]:
-                    if l < 0:
-                        hlog.debug("propagate -{} ({})".format(a,l))
-                    else:
-                        hlog.debug("propagate {} ({})".format(a,l))
                     self.__impossible.add(a)
             except KeyError:
                 pass
 
     def decide(self, vsids):
+        print self.__impossible
         for elem in self.bf_ordering(self.__source):
             print elem
         return vsids
@@ -58,8 +59,6 @@ class Pred(object):
     def undo(self, thread_id, assign, changes):
         self.__decisions = []
         for l in changes:
-            for e in self.__lit_watches[abs(l)]:
-                self.__externals[e] = assign.is_true(abs(l))
             try:
                 for a in self.__lit_ress[abs(l)]:
                     self.__impossible.remove(a)
