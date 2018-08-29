@@ -42,6 +42,21 @@ class Pred(object):
             visited.update(children)
             queue.extend(children)
 
+    def make_decisions(self):
+        self.__decisions = []
+        assigned_unit = dict()
+        last_unit = 1
+
+        for elem in self.bf_ordering(self.__source): 
+            preferred = None
+            if preferred is not None:
+                assigned_unit[elem] = preferred
+                self.__decisions.append((elem, preferred))
+            else:
+                assigned_unit[elem] = last_unit
+                self.__decisions.append((elem, last_unit))
+                last_unit += 1
+
     def propagate(self, ctl, changes):
         for l in changes:
             try:
@@ -51,7 +66,6 @@ class Pred(object):
                 pass
 
     def decide(self, vsids):
-        print self.__impossible
         for elem in self.bf_ordering(self.__source):
             print elem
         return vsids
