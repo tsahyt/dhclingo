@@ -48,6 +48,12 @@ class Pred(object):
         last_unit = 1
 
         for elem in self.bf_ordering(self.__source): 
+            one_hop = self.__instance.neighbors(elem)
+            two_hop = [ x for ns in [ self.__instance.neighbors(y) for y in one_hop ] for x in ns ]
+            
+            preferred1 = [ x for x in one_hop if x in assigned_unit ]
+            preferred2 = [ x for x in two_hop if x in assigned_unit ]
+
             preferred = None
             if preferred is not None:
                 assigned_unit[elem] = preferred
@@ -66,8 +72,7 @@ class Pred(object):
                 pass
 
     def decide(self, vsids):
-        for elem in self.bf_ordering(self.__source):
-            print elem
+        self.make_decisions()
         return vsids
 
     def undo(self, thread_id, assign, changes):
