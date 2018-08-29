@@ -8,9 +8,9 @@ import copy
 import os
 
 hlog = logging.getLogger("heuristic")
-if "LOG" in os.environ.keys() and os.environ["LOG"] == '1':
+if "LOG" in list(os.environ.keys()) and os.environ["LOG"] == '1':
     logging.basicConfig(level=logging.INFO)
-elif "LOG" in os.environ.keys() and os.environ["LOG"] == '2':
+elif "LOG" in list(os.environ.keys()) and os.environ["LOG"] == '2':
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.ERROR)
@@ -121,16 +121,14 @@ class Declarative(object):
     
     def __decide_offline(self, vsids):
         self.__last_decision = None
-        self.__offline_decisions = filter(lambda x: 
-                str(x.arguments[0]) not in self.__impossible, 
-                self.__offline_decisions)
+        self.__offline_decisions = [x for x in self.__offline_decisions if str(x.arguments[0]) not in self.__impossible]
         if not self.__offline_decisions:
             t0 = time.time()
             stepsolver = self.__make_step_solver()
             with stepsolver.solve(yield_=True) as handle:
                 try:
                     hlog.debug("solving for heuristic")
-                    model = handle.next()
+                    model = next(handle)
                     self.__persist(model)
                     hlog.debug("solving done")
                     xs = [x for x in model.symbols(atoms=True) 
@@ -157,7 +155,7 @@ class Declarative(object):
         self.__last_decision = None
         with stepsolver.solve(yield_=True) as handle:
             try:
-                model = handle.next()
+                model = next(handle)
                 self.__persist(model)
                 decision = self.__find_heuristic_atom(model)
                 t1 = time.time()
