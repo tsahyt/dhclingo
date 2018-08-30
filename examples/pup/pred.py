@@ -3,9 +3,11 @@
 
 from collections import deque
 from operator import itemgetter
+from functools import total_ordering
 import clingo
 import networkx as nx
 
+@total_ordering
 class Unit(object):
     def __init__(self, num):
         self.num = num
@@ -28,9 +30,13 @@ class Unit(object):
         else:
             raise ValueError("invalid element")
 
+    def __lt__(self, other):
+        return self.num < other.num
+
 class Pred(object):
     def __init__(self):
         super(Pred, self).__init__()
+        self.__decisions = []
         self.__source = "z1"
         self.__instance = nx.Graph()
         self.__impossible = set()
@@ -72,10 +78,15 @@ class Pred(object):
         for elem in self.bf_ordering(self.__source): 
             one_hop = self.__instance.neighbors(elem)
             two_hop = [ x for ns in [ self.__instance.neighbors(y) for y in one_hop ] for x in ns ]
-            preferred1 = [ x for x in one_hop if x in assigned_unit ]
-            preferred2 = [ x for x in two_hop if x in assigned_unit ]
+            preferred1 = [ assigned_unit[x] for x in one_hop if x in assigned_unit and assigned_unit[x].can_take(elem) ]
+            preferred2 = [ assigned_unit[x] for x in two_hop if x in assigned_unit and assigned_unit[x].can_take(elem) ]
 
             preferred = None
+            if preferred1:
+                preferred = max(preferred1)
+            elif preferred2:
+                preferred = max(preferred2)
+
             if preferred is not None:
                 assigned_unit[elem] = preferred
                 preferred.assign(elem)
@@ -95,7 +106,9 @@ class Pred(object):
                 pass
 
     def decide(self, vsids):
-        self.make_decisions()
+        if not self.__decisions:
+            self.make_decisions()
+            print self.__decisions
         return vsids
 
     def undo(self, thread_id, assign, changes):
