@@ -41,15 +41,16 @@ class Pred(object):
         self.__instance = nx.Graph()
         self.__impossible = set()
         self.__lit_ress = dict()
-        
+
     def init(self, init):
         for a in init.symbolic_atoms:
             if str(a.symbol).startswith("zone2sensor("):
                 zone = "z{}".format(a.symbol.arguments[0])
                 sensor = "s{}".format(str(a.symbol.arguments[1]))
                 self.__instance.add_edge(zone, sensor)
-            if (str(a.symbol).startswith("unit2zone(")
-                or str(a.symbol).startswith("unit2sensor(")):
+            if str(a.symbol).startswith("unit2zone(") or str(
+                a.symbol
+            ).startswith("unit2sensor("):
                 l = init.solver_literal(a.literal)
                 try:
                     self.__lit_ress[abs(l)].add(str(a.symbol))
@@ -64,22 +65,34 @@ class Pred(object):
         while queue:
             parent = queue.popleft()
             yield parent
-            nd = sorted(G.degree(set(G[parent]) - visited).items(),
-                        key=itemgetter(1))
+            nd = sorted(
+                G.degree(set(G[parent]) - visited).items(), key=itemgetter(1)
+            )
             children = [n for n, d in nd]
             visited.update(children)
             queue.extend(children)
 
     def make_decisions(self):
-        self.__decisions = []
         assigned_unit = dict()
         last_unit = Unit(1)
 
-        for elem in self.bf_ordering(self.__source): 
+        for elem in self.bf_ordering(self.__source):
             one_hop = self.__instance.neighbors(elem)
-            two_hop = [ x for ns in [ self.__instance.neighbors(y) for y in one_hop ] for x in ns ]
-            preferred1 = [ assigned_unit[x] for x in one_hop if x in assigned_unit and assigned_unit[x].can_take(elem) ]
-            preferred2 = [ assigned_unit[x] for x in two_hop if x in assigned_unit and assigned_unit[x].can_take(elem) ]
+            two_hop = [
+                x
+                for ns in [self.__instance.neighbors(y) for y in one_hop]
+                for x in ns
+            ]
+            preferred1 = [
+                assigned_unit[x]
+                for x in one_hop
+                if x in assigned_unit and assigned_unit[x].can_take(elem)
+            ]
+            preferred2 = [
+                assigned_unit[x]
+                for x in two_hop
+                if x in assigned_unit and assigned_unit[x].can_take(elem)
+            ]
 
             preferred = None
             if preferred1:
@@ -106,9 +119,8 @@ class Pred(object):
                 pass
 
     def decide(self, vsids):
-        if not self.__decisions:
+        if self.__decisions == []:
             self.make_decisions()
-            print self.__decisions
         return vsids
 
     def undo(self, thread_id, assign, changes):
