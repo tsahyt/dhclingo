@@ -6,6 +6,28 @@ from operator import itemgetter
 import clingo
 import networkx as nx
 
+class Unit(object):
+    def __init__(self, num):
+        self.num = num
+        self.zones = 0
+        self.sensors = 0
+
+    def assign(self, elem):
+        if elem.startswith("z"):
+            self.zones += 1
+        elif elem.startswith("s"):
+            self.sensors += 1
+        else:
+            raise ValueError("invalid element")
+
+    def can_take(self, elem):
+        if elem.startswith("z"):
+            return self.zones < 2
+        elif elem.startswith("s"):
+            return self.sensors < 2
+        else:
+            raise ValueError("invalid element")
+
 class Pred(object):
     def __init__(self):
         super(Pred, self).__init__()
@@ -45,23 +67,24 @@ class Pred(object):
     def make_decisions(self):
         self.__decisions = []
         assigned_unit = dict()
-        last_unit = 1
+        last_unit = Unit(1)
 
         for elem in self.bf_ordering(self.__source): 
             one_hop = self.__instance.neighbors(elem)
             two_hop = [ x for ns in [ self.__instance.neighbors(y) for y in one_hop ] for x in ns ]
-            
             preferred1 = [ x for x in one_hop if x in assigned_unit ]
             preferred2 = [ x for x in two_hop if x in assigned_unit ]
 
             preferred = None
             if preferred is not None:
                 assigned_unit[elem] = preferred
+                preferred.assign(elem)
                 self.__decisions.append((elem, preferred))
             else:
                 assigned_unit[elem] = last_unit
+                last_unit.assign(elem)
                 self.__decisions.append((elem, last_unit))
-                last_unit += 1
+                last_unit = Unit(last_unit.num + 1)
 
     def propagate(self, ctl, changes):
         for l in changes:
