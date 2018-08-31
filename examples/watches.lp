@@ -12,4 +12,4 @@ b(U+1,Z) :- a(Z,U), not a(U+1).
 :- b(U1,Z), b(U2,Z), U1 != U2.
 
 #program dynamic_heuristic.
-#heuristic b(U,Z) : unit(U), elem(Z). [Z@U, true]
+#heuristic b(U,Z) : unit(U), elem(Z). [-Z@-U, true]

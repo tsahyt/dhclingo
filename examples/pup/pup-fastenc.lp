@@ -60,8 +60,6 @@ usedUnit(U) :- unit2zone(U,Z).
 usedUnit(U) :- unit2sensor(U,S).
 freeUnit(U) :- not usedUnit(U), comUnit(U).
 
-#heuristic gt(A,X,U) : gt(A,X,U). [-1000@-1000, true]
-
 % New Unit
 #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), freeUnit(U). [-U@-L, true]
 #heuristic unit2sensor(U,S) : visitedAt(s,S,L), freeUnit(U). [-U@-L, true]
@@ -80,4 +78,9 @@ preferredUnit(s,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2)
 
 % if no source is known, pick the lexicographically smallest possible
 sourced :- source(X).
-#heuristic source(Z) : elem(z,Z), not sourced. [-Z@0, true]
+_persist(usedSource(X)) :- source(X).
+usedAllSources :- N = #count { X : usedSource(X) }, M = #count { Z : elem(z,Z) }, N = M.
+
+#heuristic source(Z) : elem(z,Z), not sourced, not usedSource(Z). [-Z@0, true]
+
+#heuristic _resign : usedAllSources, not sourced. [0@0, true]
