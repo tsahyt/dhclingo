@@ -119,9 +119,12 @@ class Pred(object):
                 pass
 
     def decide(self, vsids):
-        if self.__decisions == []:
+        if not self.__decisions: 
             self.make_decisions()
-        return vsids
+            self.__decisions.reverse()
+        while self.__decisions:
+            (elem, unit) = self.__decisions.pop()
+            return vsids
 
     def undo(self, thread_id, assign, changes):
         self.__decisions = []
