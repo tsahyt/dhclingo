@@ -13,7 +13,7 @@ Answer Set Programming (*ASP*)
 * provides a means to easily model hard combinatorial search problems
 * can perform well compared to other general purpose approaches, e.g. for configuration problems [see @aschinger_optimization_2011]
 
-TODO: details of configuration problem
+<!-- TODO: details of configuration problem -->
 
 ------
 
@@ -33,7 +33,7 @@ Domain-specific heuristics may help!
 
 ------
 
-## PUP with HWASP {data-background-color="#fff"}
+### PUP with HWASP
 
 ![](figures/pup-hwasp.svg){width=60%}
 
@@ -47,7 +47,7 @@ How to teach an ASP solver a new heuristic?
 
 Modern ASP solvers use some variation of the CDCL algorithm
 
-TODO: clearer explanation
+<!-- TODO: clearer explanation -->
 
 ```
 if (unitPropagation(φ,ν) == conflict):
@@ -96,7 +96,7 @@ Domain heuristics for Clingo introduced in @gebser_domain-specific_2013
 
 ------
 
-## CCP Evaluation {data-background-color="#fff"}
+## CCP Evaluation
 ![](figures/ccp-exp2.svg){width=60%}
 
 The combined Greedy & ASP approach was able to solve all 100 instances, versus 54 plain.
@@ -111,16 +111,13 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 
 ------
 
-```
-1 { place(I,B) : bin(B) } 1 :- item(I,_).
-:- bin(B), capacity(C), F > C, 
-    F = #sum { S,I : item(I,S), place(I,B) }.
+### Best-Fit Bin Packing
 
-#heuristic place(I,B) : 
-    bin(B), item(I,W), capacity(C),
-    S = #sum { X,I1 : place(I1,B), item(I1,X), I1 < I }, 
-    C >= S + W. [S+I, true]
-```
+![](figures/bestfit.svg){style="border:none; box-shadow:none"}
+
+* Packing item into best bin requires knowledge of current packing
+* Cannot be calculated until *all placements are known*
+* Workaround results in exponential blowup
 
 ------
 
@@ -169,7 +166,7 @@ We want to use ASP to describe heuristics for ASP.
 
 ![](figures/sequence-diagram.svg){width=60%}
 
-TODO: example for fallback in second solver call
+<!-- TODO: example for fallback in second solver call -->
 
 ## Observations
 
@@ -200,7 +197,7 @@ Watching
 Decisions
 : `#heuristic` marks heuristic rules.
 
-TODO: explain base_heuristic
+<!-- TODO: explain base_heuristic -->
 
 :::notes
 `vsids` switches to VSIDS for *one* decision, `resign` is permanent.

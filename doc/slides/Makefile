@@ -1,4 +1,4 @@
-THEME=black
+THEME=white
 
 setup:
 	wget https://github.com/hakimel/reveal.js/archive/master.tar.gz
