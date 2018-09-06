@@ -13,6 +13,8 @@ Answer Set Programming (*ASP*)
 * provides a means to easily model hard combinatorial search problems
 * can perform well compared to other general purpose approaches, e.g. for configuration problems [see @aschinger_optimization_2011]
 
+TODO: details of configuration problem
+
 ------
 
 No silver bullet, complex instances can still be prohibitively slow
@@ -25,16 +27,17 @@ Domain-specific heuristics may help!
 
 ## Why Heuristics?
 
-* Specialized solvers outperform ASP.
-* The QuickPup solver [see @teppan_quickpup:_2012] was able to solve all instances it was benchmarked on, ASP at the time was not.
-* Clingo 5.3 still only solves around 70% of the PUP instances in the ASP competition set in our benchmarks.
-* Equipped with a domain-specific heuristic written directly into the solver, @musitsch_improving_2016 was able to solve 100% of tested PUP instances.
+* Specialized solvers outperform ASP
+* The QuickPup solver [see @teppan_quickpup:_2012] was able to solve all instances it was benchmarked on, ASP at the time was not
+* Clingo 5.3 still only solves around 70% of the PUP instances in the ASP competition set in our benchmarks
 
 ------
 
 ## PUP with HWASP {data-background-color="#fff"}
 
-![](figures/pup-hwasp.svg){width=70%}
+![](figures/pup-hwasp.svg){width=60%}
+
+Equipped with a domain-specific heuristic written directly into the solver, @musitsch_improving_2016 was able to solve 100% of tested PUP instances
 
 ------
 
@@ -44,20 +47,20 @@ How to teach an ASP solver a new heuristic?
 
 Modern ASP solvers use some variation of the CDCL algorithm
 
+TODO: clearer explanation
+
 ```
 if (unitPropagation(φ,ν) == conflict):
     return UNSAT
 while not all variables assigned:
-    (x, v) ← decide(φ,ν)
-    dl ← dl + 1
-    ν ← ν ∪ {(x,v)}
+    literal ← decide(φ,ν)
+    ν ← ν ∪ {literal}
     if (unitPropagation(φ,ν) == conflict):
         β ← conflictAnalysis(φ,ν)
         if (β < 0):
             return UNSAT
         else:
             backtrack(φ,ν,β)
-            dl ← β
 return SAT
 ```
 
@@ -134,7 +137,6 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 --------- ------ ---------------
 PUP         23              36
 CCP          3              36
-SMP          4              30
 
 ------
 
@@ -167,27 +169,7 @@ We want to use ASP to describe heuristics for ASP.
 
 ![](figures/sequence-diagram.svg){width=60%}
 
-## Example
-
-```
-1 { place(I,B) : bin(B) } 1 :- item(I,_).
-:- bin(B), capacity(C), F > C, 
-    F = #sum { S,I : item(I,S), place(I,B) }.
-
-#program dynamic_heuristic.
-#watch place/2.
-
-placed(I) :- place(I,_).
-
-#heuristic place(I,B) : 
-    bin(B), item(I,W), capacity(C), not placed(I),
-    S = #sum { X,I1 : place(I1,B), item(I1,X) }, 
-    C >= S + W. [S+I@0, true]
-```
-
-::: notes
-Note that there is no ordering required in the aggregate, and that there is a negative literal in the body
-:::
+TODO: example for fallback in second solver call
 
 ## Observations
 
@@ -218,9 +200,34 @@ Watching
 Decisions
 : `#heuristic` marks heuristic rules.
 
+TODO: explain base_heuristic
+
 :::notes
 `vsids` switches to VSIDS for *one* decision, `resign` is permanent.
 :::
+
+## Example
+
+```
+1 { place(I,B) : bin(B) } 1 :- item(I,_).
+:- bin(B), capacity(C), F > C, 
+    F = #sum { S,I : item(I,S), place(I,B) }.
+
+#program dynamic_heuristic.
+#watch place/2.
+
+placed(I) :- place(I,_).
+
+#heuristic place(I,B) : 
+    bin(B), item(I,W), capacity(C), not placed(I),
+    S = #sum { X,I1 : place(I1,B), item(I1,X) }, 
+    C >= S + W. [S+I@0, true]
+```
+
+::: notes
+Note that there is no ordering required in the aggregate, and that there is a negative literal in the body
+:::
+
 
 # References
 
