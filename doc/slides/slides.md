@@ -1,6 +1,7 @@
 ---
 title: Declarative Heuristics for ASP
-author: Dipl.-Ing. Paul Ogris, AAU Klagenfurt
+author: Dipl.-Ing. Paul Ogris
+institute: AAU Klagenfurt
 date: 2018-09-11
 bibliography: slides.bib
 link-citations: true
@@ -182,16 +183,37 @@ placed(I) :- place(I,_).
 #heuristic place(I,B) : 
     bin(B), item(I,W), capacity(C), not placed(I),
     S = #sum { X,I1 : place(I1,B), item(I1,X) }, 
-    C >= S + W. [-S-I@0, true]
+    C >= S + W. [S+I@0, true]
 ```
 
-------
-
-### Observations
+## Observations
 
 + Fully declarative
 + Negation behaves as ASP users expect
 * Aggregates can *always* get evaluated
+
+## Proof Of Concept
+
+* We expose `decide` from Clasp for external implementation (C or Python)
+* The external heuristic keeps its own state, does not care about solver internals
+* Can also register as a propagator to receive updates on watched literals
+* Our Proof-of-Concept is an external heuristic written in Python handling a second heuristic solver
+* Registers and manages watched literals as required
+* Handles caching of decisions
+
+## Language
+
+Special Atoms
+: `vsids` and `resign`
+
+Persistence
+: `#persist` can be used to remember decisions between invocations
+
+Watching
+: Inputs are set with `#watch`
+
+Decisions
+: `#heuristic` marks heuristic rules.
 
 # References
 
