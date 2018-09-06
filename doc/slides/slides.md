@@ -80,22 +80,8 @@ Domain-specific heuristics in ASP are not new
 
 Domain heuristics for Clingo introduced in @gebser_domain-specific_2013
 
-. . .
-
-Allows influencing the general purpose heuristic via modifiers
-
-------
-
-It is declarative, e.g.
-
-```
-#heuristic holds(F, T-1) : holds(F,T). [l-T+1@0, true]
-#heuristic holds(F, T-1) : fluent(F), time(T), not holds(F,T). [l-T+1@0, false]
-```
-
-. . .
-
-Facts that hold are assumed to have held in the past. Falsehoods are believed to have been false before.
+* Allows influencing the general purpose heuristic via modifiers
+* It is fully declarative
 
 ------
 
@@ -119,6 +105,21 @@ However, **expressivity** is limited due to evaluation semantics.
 . . .
 
 e.g. a simple bin packing heuristic already requires *fixing an ordering upfront*.
+
+------
+
+```
+1 { place(I,B) : bin(B) } 1 :- item(I,_).
+:- bin(B), capacity(C), F > C, 
+    F = #sum { S,I : item(I,S), place(I,B) }.
+
+#heuristic place(I,B) : 
+    bin(B), item(I,W), capacity(C),
+    S = #sum { X,I1 : place(I1,B), item(I1,X), I1 < I }, 
+    C >= S + W. [S+I, true]
+```
+
+------
 
 
 ## HWasp
@@ -168,8 +169,6 @@ We want to use ASP to describe heuristics for ASP.
 
 ## Example
 
-Bin-Packing
-
 ```
 1 { place(I,B) : bin(B) } 1 :- item(I,_).
 :- bin(B), capacity(C), F > C, 
@@ -185,6 +184,10 @@ placed(I) :- place(I,_).
     S = #sum { X,I1 : place(I1,B), item(I1,X) }, 
     C >= S + W. [S+I@0, true]
 ```
+
+::: notes
+Note that there is no ordering required in the aggregate, and that there is a negative literal in the body
+:::
 
 ## Observations
 
@@ -214,6 +217,10 @@ Watching
 
 Decisions
 : `#heuristic` marks heuristic rules.
+
+:::notes
+`vsids` switches to VSIDS for *one* decision, `resign` is permanent.
+:::
 
 # References
 
