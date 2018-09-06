@@ -22,6 +22,8 @@ Domain-specific heuristics may help!
 
 ------
 
+## Why Heuristics?
+
 * Specialized solvers outperform ASP.
 * The QuickPup solver [see @teppan_quickpup:_2012] was able to solve all instances it was benchmarked on, ASP at the time was not.
 * Clingo 5.3 still only solves around 70% of the PUP instances in the ASP competition set in our benchmarks.
@@ -77,14 +79,9 @@ Domain-specific heuristics in ASP are not new
 
 Domain heuristics for Clingo introduced in @gebser_domain-specific_2013
 
-------
+. . .
 
-Allows influencing the VSIDS heuristic via modifiers
-
-* sign (true, false)
-* level 
-* factor
-* init
+Allows influencing the general purpose heuristic via modifiers
 
 ------
 
@@ -98,6 +95,21 @@ It is declarative, e.g.
 . . .
 
 Facts that hold are assumed to have held in the past. Falsehoods are believed to have been false before.
+
+------
+
+@calimeri_combining_2015 used this interface to attack the Combined Configuration Problem.
+
+1. A greedy algorithm is presented to calculate an approximate solution first
+2. The "solution" is handed to the solver by giving the solution atoms a higher heuristic value
+3. The solver is then expected to sort out any remaining problems
+
+------
+
+## CCP Evaluation {data-background-color="#fff"}
+![](figures/ccp-exp2.svg){width=60%}
+
+The combined Greedy & ASP approach was able to solve all 100 instances, versus 54 plain.
 
 ------
 
@@ -115,6 +127,12 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 ------
 
 @musitsch_improving_2016 demonstrates great improvements over general purpose heuristics on industrial problems.
+
+ Problem   Clasp  Best Heuristic
+--------- ------ ---------------
+PUP         23              36
+CCP          3              36
+SMP          4              30
 
 ------
 
