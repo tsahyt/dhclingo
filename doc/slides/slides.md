@@ -126,6 +126,10 @@ A Python interface exists, but still requires knowledge of the solver internals
 
 # Declarative Heuristics {data-background-color="#582"}
 
+## Overview { data-background-color="#fff" }
+
+![](figures/sequence-diagram.svg){width=60%}
+
 ## Low-Level
 Can we keep changes to the solver minimal while exhibiting a uniform and stable interface?
 

@@ -13,3 +13,6 @@ simple: slides.md
 
 beamer: slides.md
 	pandoc --pdf-engine=xelatex -t beamer --filter pandoc-citeproc -s -o slides.pdf slides.md
+
+handout: slides.md
+	pandoc --pdf-engine=xelatex -t latex --filter pandoc-citeproc -o handout.pdf slides.md
