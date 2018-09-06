@@ -144,34 +144,15 @@ A Python interface exists, but still requires knowledge of the solver internals
 
 # Declarative Heuristics {data-background-color="#582"}
 
-## Overview { data-background-color="#fff" }
-
-![](figures/sequence-diagram.svg){width=60%}
-
-## Low-Level
-Can we keep changes to the solver minimal while exhibiting a uniform and stable interface?
-
-. . .
-
-**Idea**: Allow implementation of `decide` externally and let it manage its own state.
-
-------
-
-No knowledge of solver internals required. Only literals need to be known for decisions.
-
-------
-
-But it is still procedural
-
-## Declarativity
+-------
 
 We want to use ASP to describe heuristics for ASP.
 
+. . .
+
 → Use a second solver!
 
-------
-
-### How it works
+## How it works
 
 + User defines two programs
     1. *Main* program
@@ -179,6 +160,10 @@ We want to use ASP to describe heuristics for ASP.
 * The heuristic is computed separately *as needed* to make decisions in the *main* solver.
 * Main solver tells the heuristic about changes, so it can adapt.
 * Repeat until a solution is found.
+
+## Overview { data-background-color="#fff" }
+
+![](figures/sequence-diagram.svg){width=60%}
 
 ## Example
 
@@ -204,7 +189,6 @@ placed(I) :- place(I,_).
 
 ### Observations
 
-+ No ordering required upfront!
 + Fully declarative
 + Negation behaves as ASP users expect
 * Aggregates can *always* get evaluated
