@@ -87,7 +87,7 @@ Modern ASP solvers use some variation of the CDCL algorithm
 
 ![](figures/cdcl-flowchart.svg){style="border:none; box-shadow:none; width:60%"}
 
-<!-- TODO: evaluate diagram vs code?
+<!-- evaluate diagram vs code?
 
 ```python
 if unitPropagation(φ,ν) == conflict:
@@ -160,6 +160,17 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 * Aggregate cannot be calculated until *all placements are known*
 * Workaround results in exponential blowup
 
+::: notes
+
+* Bin Packing is the problem of fitting a number of sized items into a number of uniformly sized bins
+* Best-Fit picks a bin such that the amount of leftover space is minimal
+* Depends on prior assignment!
+* Aggregates in heuristic bodies are calculated w.r.t. *final answer set*
+* Rules do not fire when needed
+* Workaround here relies on ordering. In the general case, all subsets of the aggregate set need to be generated.
+
+:::
+
 ------
 
 
@@ -187,6 +198,8 @@ A Python interface exists, but still requires knowledge of the solver internals
 # Declarative Heuristics {data-background-color="#582"}
 
 -------
+
+<!-- TODO: Elevator pitch! -->
 
 We want to use ASP to describe heuristics for ASP.
 
