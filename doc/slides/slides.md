@@ -12,6 +12,14 @@ Answer Set Programming (*ASP*)
 * is a declarative programming paradigm
 * provides a means to easily model hard combinatorial search problems
 
+::: notes
+Declarative
+: Describe programs in terms of "what" rather than "how"
+
+Easy Modelling
+: Saving development cost
+:::
+
 -----
 
 ASP has been used for modelling e.g.
@@ -23,6 +31,14 @@ ASP has been used for modelling e.g.
 . . .
 
 Many more can be found in [@falkner_industrial_2018]
+
+::: notes
+@aschinger_optimization_2011 investigate the Partner Units Problem. A number of zones and sensors need to be managed by control units with limited resources. How to assign those elements to units?
+
+CB-CTT is about assigning lectures to time slots under a set of hard (e.g. room availability, curriculum conflicts) and soft constraints (room capacity, travel distance) arising from the domain in education.
+
+@boenn_automatic_2011 describes a system that can automatically compose music based on known rules of harmony, melody, and rhythm in near real-time.
+:::
 
 ------
 
