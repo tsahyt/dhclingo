@@ -186,8 +186,6 @@ We want to use ASP to describe heuristics for ASP.
 
 ![](figures/sequence-diagram.svg){style="box-shadow:none; border:none; width:60%"}
 
-<!-- TODO: example for fallback in second solver call -->
-
 ## Proof Of Concept
 
 * We expose `decide` from Clasp for external implementation (C or Python)
@@ -199,23 +197,27 @@ We want to use ASP to describe heuristics for ASP.
 
 ## Language
 
+Two Heuristic Parts
+: Split between background knowledge and decision procedure
+
 Special Atoms
 : `vsids` and `resign`
 
 Persistence
 : `#persist` can be used to remember decisions between invocations
 
-Watching
-: Inputs are set with `#watch`
-
-Decisions
-: `#heuristic` marks heuristic rules.
-
-<!-- TODO: explain base_heuristic -->
-
 :::notes
 `vsids` switches to VSIDS for *one* decision, `resign` is permanent.
 :::
+
+
+------
+
+Watching
+: `#watch` synchronizes an atom from the main program with the heuristic program. Defines inputs to a heuristic.
+
+Decisions
+: `#heuristic` marks heuristic rules. Rules are weighted like weak constraints to allow fast choice of *best* decision among many.
 
 ## Example
 
@@ -245,6 +247,10 @@ Note that there is no ordering required in the aggregate, and that there is a ne
 + Negation behaves as ASP users expect
 * Aggregates can *always* get evaluated
 
-# References
+------
+
+Thank you for your attention
 
 ------
+
+## References { style="font-size:12pt" }
