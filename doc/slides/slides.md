@@ -79,11 +79,15 @@ Equipped with a domain-specific heuristic written directly into the solver, @mus
 
 How to teach an ASP solver a new heuristic?
 
-------
+. . .
 
 Modern ASP solvers use some variation of the CDCL algorithm
 
-<!-- TODO: clearer explanation -->
+------
+
+![](figures/cdcl-flowchart.svg){style="border:none; box-shadow:none; width:60%"}
+
+<!-- TODO: evaluate diagram vs code?
 
 ```python
 if unitPropagation(φ,ν) == conflict:
@@ -99,14 +103,15 @@ while not all variables assigned:
             backtrack(φ,ν,β)
 return SAT
 ```
+-->
 
 . . .
 
-A non-deterministic decision happens in `decide`!
+There is a non-deterministic decision to be made in each iteration!
 
 -------
 
-`decide` can be anything that returns a literal!
+Let us call the method "`decide`". The decision can be made in a variety of ways
 
 * General purpose heuristics like *VSIDS* or *BerkMin*
 * or *domain-specific* heuristics
