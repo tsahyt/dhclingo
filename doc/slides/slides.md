@@ -11,9 +11,29 @@ Answer Set Programming (*ASP*)
 
 * is a declarative programming paradigm
 * provides a means to easily model hard combinatorial search problems
-* can perform well compared to other general purpose approaches, e.g. for configuration problems [see @aschinger_optimization_2011]
 
-<!-- TODO: details of configuration problem -->
+-----
+
+ASP has been used for modelling e.g.
+
+- Industrial Configuration Problems [@aschinger_optimization_2011]
+- Curriculum-Based Course Timetabling [@banbara_teaspoon:_2016]
+- Artificial Music Composition [@boenn_automatic_2011]
+
+. . .
+
+Many more can be found in [@falkner_industrial_2018]
+
+------
+
+@aschinger_optimization_2011 tested ASP against other general purpose approaches on the PUP.
+
+   System     Instances Solved (of 48)
+  ---------  --------------------------
+     SAT                            13
+     CSP                            35
+   **ASP**                      **39**
+    CPLEX                           21
 
 ------
 
@@ -35,7 +55,7 @@ Domain-specific heuristics may help!
 
 ### PUP with HWASP
 
-![](figures/pup-hwasp.svg){width=60%}
+![](figures/pup-hwasp.svg){style="border:none; box-shadow:none"}
 
 Equipped with a domain-specific heuristic written directly into the solver, @musitsch_improving_2016 was able to solve 100% of tested PUP instances
 
@@ -49,14 +69,14 @@ Modern ASP solvers use some variation of the CDCL algorithm
 
 <!-- TODO: clearer explanation -->
 
-```
-if (unitPropagation(φ,ν) == conflict):
+```python
+if unitPropagation(φ,ν) == conflict:
     return UNSAT
 while not all variables assigned:
-    literal ← decide(φ,ν)
-    ν ← ν ∪ {literal}
-    if (unitPropagation(φ,ν) == conflict):
-        β ← conflictAnalysis(φ,ν)
+    literal = decide(φ,ν)
+    ν = ν ∪ {literal}
+    if unitPropagation(φ,ν) == conflict:
+        β = conflictAnalysis(φ,ν)
         if (β < 0):
             return UNSAT
         else:
@@ -97,7 +117,7 @@ Domain heuristics for Clingo introduced in @gebser_domain-specific_2013
 ------
 
 ## CCP Evaluation
-![](figures/ccp-exp2.svg){width=60%}
+![](figures/ccp-exp2.svg){style="border:none; box-shadow:none; width:70%"}
 
 The combined Greedy & ASP approach was able to solve all 100 instances, versus 54 plain.
 
@@ -116,7 +136,7 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 ![](figures/bestfit.svg){style="border:none; box-shadow:none"}
 
 * Packing item into best bin requires knowledge of current packing
-* Cannot be calculated until *all placements are known*
+* Aggregate cannot be calculated until *all placements are known*
 * Workaround results in exponential blowup
 
 ------
@@ -162,17 +182,11 @@ We want to use ASP to describe heuristics for ASP.
 * Main solver tells the heuristic about changes, so it can adapt.
 * Repeat until a solution is found.
 
-## Overview { data-background-color="#fff" }
+## Overview
 
-![](figures/sequence-diagram.svg){width=60%}
+![](figures/sequence-diagram.svg){style="box-shadow:none; border:none; width:60%"}
 
 <!-- TODO: example for fallback in second solver call -->
-
-## Observations
-
-+ Fully declarative
-+ Negation behaves as ASP users expect
-* Aggregates can *always* get evaluated
 
 ## Proof Of Concept
 
@@ -205,7 +219,7 @@ Decisions
 
 ## Example
 
-```
+```prolog
 1 { place(I,B) : bin(B) } 1 :- item(I,_).
 :- bin(B), capacity(C), F > C, 
     F = #sum { S,I : item(I,S), place(I,B) }.
@@ -225,6 +239,11 @@ placed(I) :- place(I,_).
 Note that there is no ordering required in the aggregate, and that there is a negative literal in the body
 :::
 
+## Observations
+
++ Fully declarative
++ Negation behaves as ASP users expect
+* Aggregates can *always* get evaluated
 
 # References
 
