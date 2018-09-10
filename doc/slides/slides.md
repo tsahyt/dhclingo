@@ -199,7 +199,16 @@ A Python interface exists, but still requires knowledge of the solver internals
 
 -------
 
-<!-- TODO: Elevator pitch! -->
+So far we have
+
+* a **declarative** approach with limited expressivity
+* a procedural option which is difficult to **write and maintain**.
+
+. . .
+
+Can we do better?
+
+-------
 
 We want to use ASP to describe heuristics for ASP.
 
