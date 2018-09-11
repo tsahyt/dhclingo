@@ -33,7 +33,7 @@ ASP has been used for modelling e.g.
 Many more can be found in [@falkner_industrial_2018]
 
 ::: notes
-@aschinger_optimization_2011 investigate the Partner Units Problem. A number of zones and sensors need to be managed by control units with limited resources. How to assign those elements to units?
+@aschinger_optimization_2011 investigate the Partner Units Problem. A number of zones and sensors need to be managed by control units with limited resources. How to assign those elements to units? PUP is a well studied configuration benchmark.
 
 CB-CTT is about assigning lectures to time slots under a set of hard (e.g. room availability, curriculum conflicts) and soft constraints (room capacity, travel distance) arising from the domain in education.
 
@@ -42,7 +42,7 @@ CB-CTT is about assigning lectures to time slots under a set of hard (e.g. room 
 
 ------
 
-@aschinger_optimization_2011 tested ASP against other general purpose approaches on the PUP.
+@aschinger_optimization_2011 tested ASP against other general purpose approaches on the PUP
 
    System     Instances Solved (of 48)
   ---------  --------------------------
@@ -113,8 +113,15 @@ There is a non-deterministic decision to be made in each iteration!
 
 Let us call the method "`decide`". The decision can be made in a variety of ways
 
-* General purpose heuristics like *VSIDS* or *BerkMin*
+* General purpose heuristics like *VSIDS*
 * or *domain-specific* heuristics
+
+::: notes
+
+VSIDS assigns a weight to literals according to their recent occurrence in
+conflicts. The weight decays over time as they go unused.
+
+:::
 
 # History {data-background-color="#a30"}
 
@@ -129,7 +136,7 @@ Domain heuristics for Clingo introduced in @gebser_domain-specific_2013
 
 ------
 
-@calimeri_combining_2015 used this interface to attack the Combined Configuration Problem.
+@calimeri_combining_2015 used this interface to attack the Combined Configuration Problem
 
 1. A greedy algorithm is presented to calculate an approximate solution first
 2. The "solution" is handed to the solver by giving the solution atoms a higher heuristic value
@@ -140,15 +147,15 @@ Domain heuristics for Clingo introduced in @gebser_domain-specific_2013
 ## CCP Evaluation
 ![](figures/ccp-exp2.svg){style="border:none; box-shadow:none; width:70%"}
 
-The combined Greedy & ASP approach was able to solve all 100 instances, versus 54 plain.
+The combined Greedy & ASP approach was able to solve all 100 instances, versus 54 plain
 
 ------
 
-However, **expressivity** is limited due to evaluation semantics.
+However, **expressivity** is limited due to evaluation semantics
 
 . . .
 
-e.g. a simple bin packing heuristic already requires *fixing an ordering upfront*.
+e.g. a simple bin packing heuristic already requires *fixing an ordering upfront*
 
 ------
 
@@ -167,7 +174,7 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 * Depends on prior assignment!
 * Aggregates in heuristic bodies are calculated w.r.t. *final answer set*
 * Rules do not fire when needed
-* Workaround here relies on ordering. In the general case, all subsets of the aggregate set need to be generated.
+* Workaround here relies on ordering. In the general case, all subsets of the aggregate set need to be generated
 
 :::
 
@@ -176,11 +183,11 @@ e.g. a simple bin packing heuristic already requires *fixing an ordering upfront
 
 ## HWasp
 
-@dodaro_driving_2016 present a low-level interface to the WASP solver, allowing the implementation of domain specific heuristics.
+@dodaro_driving_2016 present a low-level interface to the WASP solver, allowing the implementation of domain specific heuristics
 
 ------
 
-@musitsch_improving_2016 demonstrates great improvements over general purpose heuristics on industrial problems.
+@musitsch_improving_2016 demonstrates great improvements over general purpose heuristics on industrial problems
 
  Problem   Clasp  Best Heuristic
 --------- ------ ---------------
@@ -189,7 +196,7 @@ CCP          3              36
 
 ------
 
-Purely procedural interface, requiring knowledge of solver internals, as well as rebuilding the solver.
+Purely procedural interface, requiring knowledge of solver internals, as well as rebuilding the solver
 
 ::: notes
 A Python interface exists, but still requires knowledge of the solver internals
@@ -202,7 +209,7 @@ A Python interface exists, but still requires knowledge of the solver internals
 So far we have
 
 * a **declarative** approach with limited expressivity
-* a procedural option which is difficult to **write and maintain**.
+* a procedural option which is difficult to **write and maintain**
 
 . . .
 
@@ -210,7 +217,7 @@ Can we do better?
 
 -------
 
-We want to use ASP to describe heuristics for ASP.
+We want to use ASP to describe heuristics for ASP
 
 . . .
 
@@ -221,9 +228,9 @@ We want to use ASP to describe heuristics for ASP.
 + User defines two programs
     1. *Main* program
     2. *Heuristic* program
-* The heuristic is computed separately *as needed* to make decisions in the *main* solver.
-* Main solver tells the heuristic about changes, so it can adapt.
-* Repeat until a solution is found.
+* The heuristic is computed separately *as needed* to make decisions in the *main* solver
+* Main solver tells the heuristic about changes, so it can adapt
+* Repeat until a solution is found
 
 ## Overview
 
@@ -257,10 +264,10 @@ Persistence
 ------
 
 Watching
-: `#watch` synchronizes an atom from the main program with the heuristic program. Defines inputs to a heuristic.
+: `#watch` synchronizes an atom from the main program with the heuristic program. Defines inputs to a heuristic
 
 Decisions
-: `#heuristic` marks heuristic rules. Rules are weighted like weak constraints to allow fast choice of *best* decision among many.
+: `#heuristic` marks heuristic rules. Rules are weighted like weak constraints to allow fast choice of *best* decision among many
 
 ## Example
 
