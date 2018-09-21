@@ -36,7 +36,6 @@ class Declarative(object):
         # define mappings
         self.__externals = dict()
         self.__lit_watches = dict()
-        self.__lit_ress = dict()
         self.__res_lits = dict()
         self.__impossible = set()
         self.__persisted = set()
@@ -51,12 +50,12 @@ class Declarative(object):
 
         self.__last_decision = None
 
-    def __remember_watch(self, alit, f):
-        self.__res_lits[str(f)] = alit
+    def __remember_watch(self, lit, f):
+        self.__res_lits[str(f)] = lit
         try:
-            self.__lit_watches[alit].add(f)
+            self.__lit_watches[lit].add(f)
         except KeyError:
-            self.__lit_watches[alit] = set([f])
+            self.__lit_watches[lit] = set([f])
 
     def __process_hprog(self, a):
         self.__collect_watches(self, a)
@@ -220,27 +219,15 @@ class Declarative(object):
             name = a.symbol.name
             alen = len(a.symbol.arguments)
             lit = init.solver_literal(a.literal)
-            if (name, alen) in self.__external_sigs:
+            if (name, alen) in self.__external_sigs or (name, alen) in self.__result_sigs:
                 # watch in main
                 init.add_watch(lit)
                 init.add_watch(-lit)
 
                 # store as external
                 f = clingo.Function(name, a.symbol.arguments)
-                alit = abs(lit)
                 self.__externals[f] = a.is_fact
-                self.__remember_watch(alit, f)
-            if (name, alen) in self.__result_sigs:
-                init.add_watch(lit)
-                init.add_watch(-lit)
-
-                alit = abs(lit)
-                f = str(clingo.Function(name, a.symbol.arguments))
-                try:
-                    self.__lit_ress[alit].add(f)
-                except KeyError:
-                    self.__lit_ress[alit] = set([f])
-                self.__remember_watch(alit, f)
+                self.__remember_watch(lit, f)
             if a.is_fact:
                 self.__add_fact(a.symbol)
 
@@ -264,27 +251,30 @@ class Declarative(object):
                 hlog.debug("clearing cache after one-step backtracking")
                 self.__offline_decisions = []
         for l in changes:
-            for e in self.__lit_watches[abs(l)]:
-                self.__externals[e] = ctl.assignment.is_true(abs(l))
             try:
-                for a in self.__lit_ress[abs(l)]:
-                    if l < 0:
-                        hlog.debug("propagate -{} ({})".format(a,l))
-                    else:
-                        hlog.debug("propagate {} ({})".format(a,l))
-                    self.__impossible.add(a)
+                for e in self.__lit_watches[l]:
+                    hlog.debug("propagate {} ({})".format(e,l))
+                    self.__externals[e] = True
+                    self.__impossible.add(str(e))
+                for e in self.__lit_watches[-l]:
+                    hlog.debug("propagate -{} ({})".format(e,l))
+                    self.__externals[e] = False
+                    self.__impossible.add(str(e))
             except KeyError:
                 pass
+        print self.__impossible
 
     def undo(self, thread_id, assign, changes):
         hlog.debug("undo {}".format(changes))
         self.__offline_decisions = []
         for l in changes:
-            for e in self.__lit_watches[abs(l)]:
-                self.__externals[e] = assign.is_true(abs(l))
             try:
-                for a in self.__lit_ress[abs(l)]:
-                    self.__impossible.remove(a)
+                for e in self.__lit_watches[l]:
+                    self.__externals[e] = False
+                    self.__impossible.remove(e)
+                for e in self.__lit_watches[-l]:
+                    self.__externals[e] = False
+                    self.__impossible.remove(e)
             except KeyError:
                 pass
 
