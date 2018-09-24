@@ -142,6 +142,7 @@ class Declarative(object):
 
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
+            print d
             if str(d.arguments[0]) not in self.__impossible:
                 return self.__make_decision(vsids, d)
 
@@ -219,6 +220,7 @@ class Declarative(object):
             name = a.symbol.name
             alen = len(a.symbol.arguments)
             lit = init.solver_literal(a.literal)
+            print (a.symbol, lit)
             if (name, alen) in self.__external_sigs or (name, alen) in self.__result_sigs:
                 # watch in main
                 init.add_watch(lit)
@@ -256,6 +258,9 @@ class Declarative(object):
                     hlog.debug("propagate {} ({})".format(e,l))
                     self.__externals[e] = True
                     self.__impossible.add(str(e))
+            except KeyError:
+                pass
+            try:
                 for e in self.__lit_watches[-l]:
                     hlog.debug("propagate -{} ({})".format(e,l))
                     self.__externals[e] = False
