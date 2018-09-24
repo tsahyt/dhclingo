@@ -142,7 +142,6 @@ class Declarative(object):
 
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
-            print d
             if str(d.arguments[0]) not in self.__impossible:
                 return self.__make_decision(vsids, d)
 
@@ -220,7 +219,6 @@ class Declarative(object):
             name = a.symbol.name
             alen = len(a.symbol.arguments)
             lit = init.solver_literal(a.literal)
-            print (a.symbol, lit)
             if (name, alen) in self.__external_sigs or (name, alen) in self.__result_sigs:
                 # watch in main
                 init.add_watch(lit)
@@ -267,7 +265,6 @@ class Declarative(object):
                     self.__impossible.add(str(e))
             except KeyError:
                 pass
-        print self.__impossible
 
     def undo(self, thread_id, assign, changes):
         hlog.debug("undo {}".format(changes))
