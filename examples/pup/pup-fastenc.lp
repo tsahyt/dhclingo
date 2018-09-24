@@ -62,7 +62,7 @@ freeUnit(U) :- not usedUnit(U), comUnit(U).
 
 % New Unit
 #heuristic unit2zone(U,Z) : visitedAt(z,Z,L), freeUnit(U). [-U@-L, true]
-#heuristic unit2sensor(U,S) : visitedAt(s,S,L), freeUnit(U). [-U@-L, true]
+#heuristic unit2sensor(U,S) : visitedAt(d,S,L), freeUnit(U). [-U@-L, true]
 
 % Pred prefers units that are already connected to elements close in the input
 % graph. If no such preferred unit can be found, we use a new unit (see above)
@@ -74,7 +74,7 @@ preferredUnit(s,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2)
 #heuristic unit2zone(U,Z) : 
     visitedAt(z,Z,L), usedUnit(U), preferredUnit(z,Z,U,W). [W@-L, true]
 #heuristic unit2sensor(U,S) : 
-    visitedAt(s,S,L), usedUnit(U), preferredUnit(s,S,U,W). [W@-L, true]
+    visitedAt(d,S,L), usedUnit(U), preferredUnit(d,S,U,W). [W@-L, true]
 
 % if no source is known, pick the lexicographically smallest possible
 sourced :- source(X).
