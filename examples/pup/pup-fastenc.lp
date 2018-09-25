@@ -19,13 +19,11 @@ unit2zone(1,Z)   :- elem(z,Z), comUnit(1), not gt(z,Z,1).
 unit2zone(U+1,Z) :- gt(z,Z,U), not gt(z,Z,U+1).
 
 :- comUnit(U), #count{ Z : unit2zone(U,Z) } > 2.
-:- elem(z,Z), unit2zone(U1,Z), unit2zone(U2,Z), U1 != U2.
 
 unit2sensor(1,D)   :- elem(d,D), comUnit(1), not gt(d,D,1).
 unit2sensor(U+1,D) :- gt(d,D,U), not gt(d,D,U+1).
 
 :- comUnit(U), #count{ D : unit2sensor(U,D) } > 2.
-:- elem(d,D), unit2sensor(U1,D), unit2sensor(U2,D), U1 != U2.
 
 partner(d,D,U) :- unit2zone(U,Z), rule(d), zone2sensor(Z,D).
 partner(z,Z,U) :- unit2sensor(U,D), rule(z), zone2sensor(Z,D).
