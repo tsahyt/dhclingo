@@ -62,6 +62,7 @@ class Pred(object):
                     self.__lit_ress[abs(l)] = set([str(a.symbol)])
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
+                init.add_watch(-l)
         print self.__res_lits
 
     def bf_ordering(self, start):
@@ -117,6 +118,7 @@ class Pred(object):
                 last_unit = Unit(last_unit.num + 1)
 
     def propagate(self, ctl, changes):
+        print "propagate {}".format(changes)
         for l in changes:
             try:
                 for a in self.__lit_ress[abs(l)]:
@@ -134,17 +136,16 @@ class Pred(object):
             predicate = "{}({},{})".format("unit2zone" if elem.startswith("z") else "unit2sensor", unit.num, elem[1:])
             try:
                 lit = self.__res_lits[predicate]
-                print (elem, str(unit), predicate, lit)
                 if predicate in self.__impossible:
-                    print "skipping because impossible"
                     continue
+                print "returning {}".format(lit)
                 return lit
             except KeyError:
-                print "ran out of units"
                 return vsids
         return vsids
 
     def undo(self, thread_id, assign, changes):
+        print "undo {}".format(changes)
         self.__decisions = []
         for l in changes:
             try:
