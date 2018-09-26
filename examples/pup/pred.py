@@ -63,7 +63,6 @@ class Pred(object):
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
-        print self.__res_lits
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -111,14 +110,17 @@ class Pred(object):
                 assigned_unit[elem] = preferred
                 preferred.assign(elem)
                 self.__decisions.append((elem, preferred))
-            else:
+            elif last_unit.can_take(elem):
                 assigned_unit[elem] = last_unit
                 last_unit.assign(elem)
                 self.__decisions.append((elem, last_unit))
+            else:
                 last_unit = Unit(last_unit.num + 1)
+                assigned_unit[elem] = last_unit
+                last_unit.assign(elem)
+                self.__decisions.append((elem, last_unit))
 
     def propagate(self, ctl, changes):
-        print "propagate {}".format(changes)
         for l in changes:
             try:
                 for a in self.__lit_ress[abs(l)]:
@@ -138,14 +140,13 @@ class Pred(object):
                 lit = self.__res_lits[predicate]
                 if predicate in self.__impossible:
                     continue
-                print "returning {}".format(lit)
                 return lit
             except KeyError:
+                print "unknown unit"
                 return vsids
         return vsids
 
     def undo(self, thread_id, assign, changes):
-        print "undo {}".format(changes)
         self.__decisions = []
         for l in changes:
             try:
