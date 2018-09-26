@@ -33,6 +33,9 @@ class Unit(object):
     def __lt__(self, other):
         return self.num < other.num
 
+    def __str__(self):
+        return str(self.num)
+
 class Pred(object):
     def __init__(self):
         super(Pred, self).__init__()
@@ -41,6 +44,7 @@ class Pred(object):
         self.__instance = nx.Graph()
         self.__impossible = set()
         self.__lit_ress = dict()
+        self.__res_lits = dict()
 
     def init(self, init):
         for a in init.symbolic_atoms:
@@ -56,7 +60,9 @@ class Pred(object):
                     self.__lit_ress[abs(l)].add(str(a.symbol))
                 except KeyError:
                     self.__lit_ress[abs(l)] = set([str(a.symbol)])
+                self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
+        print self.__res_lits
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -120,11 +126,23 @@ class Pred(object):
 
     def decide(self, vsids):
         if not self.__decisions: 
+            print "recalc"
             self.make_decisions()
             self.__decisions.reverse()
         while self.__decisions:
             (elem, unit) = self.__decisions.pop()
-            return vsids
+            predicate = "{}({},{})".format("unit2zone" if elem.startswith("z") else "unit2sensor", unit.num, elem[1:])
+            try:
+                lit = self.__res_lits[predicate]
+                print (elem, str(unit), predicate, lit)
+                if predicate in self.__impossible:
+                    print "skipping because impossible"
+                    continue
+                return lit
+            except KeyError:
+                print "ran out of units"
+                return vsids
+        return vsids
 
     def undo(self, thread_id, assign, changes):
         self.__decisions = []
