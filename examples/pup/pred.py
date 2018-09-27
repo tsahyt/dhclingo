@@ -149,30 +149,43 @@ class Pred(object):
                 last_unit.assign(elem)
                 self.__decisions.append((elem, last_unit))
 
-    def __assign(self, elem, unit):
-        self.__assigned_unit[elem].unassign(elem)
-        unit.assign(elem)
+    def __assign(self, a):
+        z = self.__zoneRE.match(a)
+        if z:
+            (u,e) = z.groups()
+            unit = self.__units[int(u)]
+            elem = "z" + e
+            self.__assigned_unit[elem].unassign(elem)
+            unit.assign(elem)
+            return
+        s = self.__sensorRE.match(a)
+        if s:
+            (u,e) = s.groups()
+            unit = self.__units[int(u)]
+            elem = "s" + e
+            self.__assigned_unit[elem].unassign(elem)
+            unit.assign(elem)
 
-    def __unassign(self, elem):
-        self.__assigned_unit[elem].unassign(elem)
+    def __unassign(self, a):
+        z = self.__zoneRE.match(a)
+        if z:
+            (u,e) = z.groups()
+            unit = self.__units[int(u)]
+            elem = "z" + e
+            self.__assigned_unit[elem].unassign(elem)
+            return
+        s = self.__sensorRE.match(a)
+        if s:
+            (u,e) = s.groups()
+            unit = self.__units[int(u)]
+            elem = "s" + e
+            self.__assigned_unit[elem].unassign(elem)
 
     def propagate(self, ctl, changes):
         for l in changes:
             try:
                 for a in self.__lit_ress[l]:
-                    z = self.__zoneRE.match(a)
-                    if z:
-                        (u,e) = z.groups()
-                        unit = self.__units[int(u)]
-                        elem = "z" + e
-                        self.__assign(unit, elem)
-                    else:
-                        s = self.__sensorRE.match(a)
-                        if s:
-                            (u,e) = s.groups()
-                            unit = self.__units[int(u)]
-                            elem = "s" + e
-                            self.__assign(unit, elem)
+                    self.__assign(a)
                     self.__impossible.add(a)
             except KeyError:
                 pass
@@ -218,6 +231,7 @@ class Pred(object):
                         if not source_switched and self.__source and r.match(a):
                             self.__source = self.__source[1:]
                             source_switched = True
+                        self.__unassign(a)
                         self.__impossible.remove(a)
                 except KeyError:
                     pass
