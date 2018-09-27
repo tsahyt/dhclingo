@@ -4,6 +4,7 @@
 from collections import deque
 from operator import itemgetter
 from functools import total_ordering
+import re
 import clingo
 import networkx as nx
 
@@ -40,7 +41,7 @@ class Pred(object):
     def __init__(self):
         super(Pred, self).__init__()
         self.__decisions = []
-        self.__source = "z1"
+        self.__source = set()
         self.__instance = nx.Graph()
         self.__impossible = set()
         self.__lit_ress = dict()
@@ -51,6 +52,8 @@ class Pred(object):
             if str(a.symbol).startswith("zone2sensor("):
                 zone = "z{}".format(a.symbol.arguments[0])
                 sensor = "s{}".format(str(a.symbol.arguments[1]))
+                self.__source.add(zone)
+                self.__source.add(sensor)
                 self.__instance.add_edge(zone, sensor)
             if str(a.symbol).startswith("unit2zone(") or str(
                 a.symbol
@@ -63,6 +66,7 @@ class Pred(object):
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
+        self.__source = list(self.__source)
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -82,7 +86,11 @@ class Pred(object):
         assigned_unit = dict()
         last_unit = Unit(1)
 
-        for elem in self.bf_ordering(self.__source):
+        if not self.__source:
+            self.__decisions = []
+            return
+
+        for elem in self.bf_ordering(self.__source[0]):
             one_hop = self.__instance.neighbors(elem)
             two_hop = [
                 x
@@ -130,12 +138,13 @@ class Pred(object):
 
     def decide(self, vsids):
         if not self.__decisions: 
-            print "recalc"
             self.make_decisions()
             self.__decisions.reverse()
         while self.__decisions:
             (elem, unit) = self.__decisions.pop()
-            predicate = "{}({},{})".format("unit2zone" if elem.startswith("z") else "unit2sensor", unit.num, elem[1:])
+            predicate = "{}({},{})".format(
+                    "unit2zone" if elem.startswith("z") else "unit2sensor", 
+                    unit.num, elem[1:])
             try:
                 lit = self.__res_lits[predicate]
                 if predicate in self.__impossible:
@@ -151,6 +160,15 @@ class Pred(object):
         for l in changes:
             try:
                 for a in self.__lit_ress[abs(l)]:
+                    z = re.match(r"unit2zone\((\d+),(\d+)\)", a)
+                    s = re.match(r"unit2sensor\((\d+),(\d+)\)", a)
+                    x = ""
+                    if z:
+                        x = "z" + z.groups()[1]
+                    elif s:
+                        x = "s" + s.groups()[1]
+                    if self.__source and self.__source[0] == x:
+                        self.__source = self.__source[1:]
                     self.__impossible.remove(a)
             except KeyError:
                 pass
