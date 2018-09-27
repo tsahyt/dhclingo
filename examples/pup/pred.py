@@ -53,7 +53,6 @@ class Pred(object):
                 zone = "z{}".format(a.symbol.arguments[0])
                 sensor = "s{}".format(str(a.symbol.arguments[1]))
                 self.__source.add(zone)
-                self.__source.add(sensor)
                 self.__instance.add_edge(zone, sensor)
             if str(a.symbol).startswith("unit2zone(") or str(
                 a.symbol
@@ -66,7 +65,8 @@ class Pred(object):
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
-        self.__source = list(self.__source)
+        self.__source = sorted(list(self.__source))
+        print self.__source
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -157,8 +157,8 @@ class Pred(object):
         return vsids
 
     def undo(self, thread_id, assign, changes):
-        print "undo"
         self.__decisions = []
+        source_switched = False
         if self.__source:
             if self.__source[0].startswith("z"):
                 rs = r"unit2zone\((\d+),{}\)".format(self.__source[0][1:])
@@ -168,9 +168,11 @@ class Pred(object):
             for l in changes:
                 try:
                     for a in self.__lit_ress[abs(l)]:
-                        if self.__source and r.match(a):
+                        if not source_switched and self.__source and r.match(a):
                             print "source {}, {} undone".format(self.__source[0],a)
                             self.__source = self.__source[1:]
+                            source_switched = True
+                        print "undoing {}".format(a)
                         self.__impossible.remove(a)
                 except KeyError:
                     pass
