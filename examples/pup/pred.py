@@ -23,6 +23,14 @@ class Unit(object):
         else:
             raise ValueError("invalid element")
 
+    def unassign(self, elem):
+        if elem.startswith("z"):
+            self.zones -= 1
+        elif elem.startswith("s"):
+            self.sensors -= 1
+        else:
+            raise ValueError("invalid element")
+
     def can_take(self, elem):
         if elem.startswith("z"):
             return self.zones < 2
@@ -141,19 +149,37 @@ class Pred(object):
                 last_unit.assign(elem)
                 self.__decisions.append((elem, last_unit))
 
+    def __assign(self, elem, unit):
+        self.__assigned_unit[elem].unassign(elem)
+        unit.assign(elem)
+
+    def __unassign(self, elem):
+        self.__assigned_unit[elem].unassign(elem)
+
     def propagate(self, ctl, changes):
         for l in changes:
             try:
                 for a in self.__lit_ress[l]:
-                    if self.__zoneRE.match(a):
-                        print (a, "zone pos!")
+                    z = self.__zoneRE.match(a)
+                    if z:
+                        (u,e) = z.groups()
+                        unit = self.__units[int(u)]
+                        elem = "z" + e
+                        self.__assign(unit, elem)
+                    else:
+                        s = self.__sensorRE.match(a)
+                        if s:
+                            (u,e) = s.groups()
+                            unit = self.__units[int(u)]
+                            elem = "s" + e
+                            self.__assign(unit, elem)
                     self.__impossible.add(a)
             except KeyError:
                 pass
             try:
                 for a in self.__lit_ress[-l]:
-                    if self.__zoneRE.match(a):
-                        print (a, "zone neg!")
+                    # if self.__zoneRE.match(a):
+                        # print (a, "zone neg!")
                     self.__impossible.add(a)
             except KeyError:
                 pass
