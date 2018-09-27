@@ -143,12 +143,13 @@ class Pred(object):
         while self.__decisions:
             (elem, unit) = self.__decisions.pop()
             predicate = "{}({},{})".format(
-                    "unit2zone" if elem.startswith("z") else "unit2sensor", 
+                    "unit2zone" if elem[0] == 'z' else "unit2sensor", 
                     unit.num, elem[1:])
             try:
                 lit = self.__res_lits[predicate]
                 if predicate in self.__impossible:
                     continue
+                print "decide {}".format(predicate)
                 return lit
             except KeyError:
                 print "unknown unit"
@@ -156,19 +157,20 @@ class Pred(object):
         return vsids
 
     def undo(self, thread_id, assign, changes):
+        print "undo"
         self.__decisions = []
-        for l in changes:
-            try:
-                for a in self.__lit_ress[abs(l)]:
-                    z = re.match(r"unit2zone\((\d+),(\d+)\)", a)
-                    s = re.match(r"unit2sensor\((\d+),(\d+)\)", a)
-                    x = ""
-                    if z:
-                        x = "z" + z.groups()[1]
-                    elif s:
-                        x = "s" + s.groups()[1]
-                    if self.__source and self.__source[0] == x:
-                        self.__source = self.__source[1:]
-                    self.__impossible.remove(a)
-            except KeyError:
-                pass
+        if self.__source:
+            if self.__source[0].startswith("z"):
+                rs = r"unit2zone\((\d+),{}\)".format(self.__source[0][1:])
+            else:
+                rs = r"unit2sensor\((\d+),{}\)".format(self.__source[0][1:])
+            r = re.compile(rs)
+            for l in changes:
+                try:
+                    for a in self.__lit_ress[abs(l)]:
+                        if self.__source and r.match(a):
+                            print "source {}, {} undone".format(self.__source[0],a)
+                            self.__source = self.__source[1:]
+                        self.__impossible.remove(a)
+                except KeyError:
+                    pass
