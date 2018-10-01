@@ -46,7 +46,6 @@ class Pred(object):
         self.__impossible = set()
         self.__lit_ress = dict()
         self.__res_lits = dict()
-        self.__assigned_unit = dict()
 
     def init(self, init):
         for a in init.symbolic_atoms:
@@ -60,13 +59,14 @@ class Pred(object):
             ).startswith("unit2sensor("):
                 l = init.solver_literal(a.literal)
                 try:
-                    self.__lit_ress[l].add(str(a.symbol))
+                    self.__lit_ress[abs(l)].add(str(a.symbol))
                 except KeyError:
-                    self.__lit_ress[l] = set([str(a.symbol)])
+                    self.__lit_ress[abs(l)] = set([str(a.symbol)])
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
         self.__source = sorted(list(self.__source))
+        print self.__source
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -83,7 +83,7 @@ class Pred(object):
             queue.extend(children)
 
     def make_decisions(self):
-        assigned_unit = self.__assigned_unit
+        assigned_unit = dict()
         last_unit = Unit(1)
 
         if not self.__source:
@@ -149,6 +149,7 @@ class Pred(object):
                 lit = self.__res_lits[predicate]
                 if predicate in self.__impossible:
                     continue
+                print "decide {}".format(predicate)
                 return lit
             except KeyError:
                 print "unknown unit"
@@ -168,8 +169,10 @@ class Pred(object):
                 try:
                     for a in self.__lit_ress[abs(l)]:
                         if not source_switched and self.__source and r.match(a):
+                            print "source {}, {} undone".format(self.__source[0],a)
                             self.__source = self.__source[1:]
                             source_switched = True
+                        print "undoing {}".format(a)
                         self.__impossible.remove(a)
                 except KeyError:
                     pass
