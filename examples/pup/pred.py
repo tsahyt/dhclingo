@@ -41,24 +41,19 @@ class Pred(object):
     def __init__(self):
         super(Pred, self).__init__()
         self.__decisions = []
-        self.__source = []
+        self.__source = set()
         self.__instance = nx.Graph()
         self.__impossible = set()
         self.__lit_ress = dict()
         self.__res_lits = dict()
         self.__assigned_unit = dict()
-        self.__zoneRE = re.compile(r"unit2zone\((\d+),(\d+)\)")
-        self.__sensorRE = re.compile(r"unit2sensor\((\d+),(\d+)\)")
-        self.__units = dict()
 
     def init(self, init):
-        units = set()
-        source = set()
         for a in init.symbolic_atoms:
             if str(a.symbol).startswith("zone2sensor("):
                 zone = "z{}".format(a.symbol.arguments[0])
                 sensor = "s{}".format(str(a.symbol.arguments[1]))
-                source.add(zone)
+                self.__source.add(zone)
                 self.__instance.add_edge(zone, sensor)
             if str(a.symbol).startswith("unit2zone(") or str(
                 a.symbol
@@ -71,12 +66,7 @@ class Pred(object):
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
-            if str(a.symbol).startswith("comUnit("):
-                units.add(Unit(int(str(a.symbol.arguments[0]))))
-        self.__source = sorted(list(source))
-        for u in units:
-            self.__units[u.num] = u
-        print self.__units
+        self.__source = sorted(list(self.__source))
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -94,7 +84,7 @@ class Pred(object):
 
     def make_decisions(self):
         assigned_unit = self.__assigned_unit
-        last_unit = self.__units[1]
+        last_unit = Unit(1)
 
         if not self.__source:
             self.__decisions = []
@@ -133,10 +123,7 @@ class Pred(object):
                 last_unit.assign(elem)
                 self.__decisions.append((elem, last_unit))
             else:
-                try:
-                    last_unit = self.__units[last_unit.num + 1]
-                except KeyError:
-                    print "ran out of units"
+                last_unit = Unit(last_unit.num + 1)
                 assigned_unit[elem] = last_unit
                 last_unit.assign(elem)
                 self.__decisions.append((elem, last_unit))
@@ -144,16 +131,7 @@ class Pred(object):
     def propagate(self, ctl, changes):
         for l in changes:
             try:
-                for a in self.__lit_ress[l]:
-                    if self.__zoneRE.match(a):
-                        print (a, "zone pos!")
-                    self.__impossible.add(a)
-            except KeyError:
-                pass
-            try:
-                for a in self.__lit_ress[-l]:
-                    if self.__zoneRE.match(a):
-                        print (a, "zone neg!")
+                for a in self.__lit_ress[abs(l)]:
                     self.__impossible.add(a)
             except KeyError:
                 pass
