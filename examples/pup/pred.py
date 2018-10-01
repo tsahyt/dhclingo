@@ -185,14 +185,14 @@ class Pred(object):
         for l in changes:
             try:
                 for a in self.__lit_ress[l]:
-                    print "propagate {}".format(a)
                     self.__assign(a)
                     self.__impossible.add(a)
             except KeyError:
                 pass
             try:
                 for a in self.__lit_ress[-l]:
-                    print "propagate -{}".format(a)
+                    # if self.__zoneRE.match(a):
+                        # print (a, "zone neg!")
                     self.__impossible.add(a)
             except KeyError:
                 pass
@@ -200,7 +200,6 @@ class Pred(object):
     def decide(self, vsids):
         if not self.__decisions: 
             self.make_decisions()
-            print self.__decisions
             self.__decisions.reverse()
         while self.__decisions:
             (elem, unit) = self.__decisions.pop()
@@ -211,7 +210,6 @@ class Pred(object):
                 lit = self.__res_lits[predicate]
                 if predicate in self.__impossible:
                     continue
-                print "choice {}".format(predicate)
                 return lit
             except KeyError:
                 print "unknown unit"
@@ -230,7 +228,6 @@ class Pred(object):
             for l in changes:
                 try:
                     for a in self.__lit_ress[abs(l)]:
-                        print "undo {}".format(a)
                         if not source_switched and self.__source and r.match(a):
                             self.__source = self.__source[1:]
                             source_switched = True
