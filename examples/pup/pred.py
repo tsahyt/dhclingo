@@ -43,6 +43,7 @@ class Pred(object):
         self.__decisions = []
         self.__source = set()
         self.__units = []
+        self.__assigned = dict()
         self.__instance = nx.Graph()
         self.__impossible = set()
         self.__lit_ress = dict()
@@ -54,10 +55,23 @@ class Pred(object):
                 a.symbol
             ).startswith("unit2sensor("):
                 l = init.solver_literal(a.literal)
+                u = int(str(a.symbol.arguments[0]))
+                e = int(str(a.symbol.arguments[1]))
                 try:
-                    self.__lit_ress[l].add(str(a.symbol))
+                    self.__lit_ress[l].add(('s',u,e))
                 except KeyError:
-                    self.__lit_ress[l] = set([str(a.symbol)])
+                    self.__lit_ress[l] = set([('s',u,e)])
+                self.__res_lits[str(a.symbol)] = l
+                init.add_watch(l)
+                init.add_watch(-l)
+            elif str( a.symbol).startswith("unit2sensor("):
+                l = init.solver_literal(a.literal)
+                u = int(str(a.symbol.arguments[0]))
+                e = int(str(a.symbol.arguments[1]))
+                try:
+                    self.__lit_ress[l].add(('z',u,e))
+                except KeyError:
+                    self.__lit_ress[l] = set([('z',u,e)])
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
@@ -71,6 +85,7 @@ class Pred(object):
                 self.__units.append(Unit(n))
         self.__source = sorted(list(self.__source))
         self.__units = sorted(self.__units)
+        print map(str,self.__source)
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -135,7 +150,14 @@ class Pred(object):
     def propagate(self, ctl, changes):
         for l in changes:
             try:
-                for a in self.__lit_ress[abs(l)]:
+                for a in self.__lit_ress[l]:
+                    print "prop {}".format(a)
+                    self.__impossible.add(a)
+            except KeyError:
+                pass
+            try:
+                for a in self.__lit_ress[-l]:
+                    print "prop -{}".format(a)
                     self.__impossible.add(a)
             except KeyError:
                 pass
@@ -151,7 +173,10 @@ class Pred(object):
                     unit.num, elem[1:])
             try:
                 lit = self.__res_lits[predicate]
-                if predicate in self.__impossible:
+                a = (elem[0], int(elem[1:]), int(unit.num))
+                print a
+                if a in self.__impossible:
+                    print "imp"
                     continue
                 return lit
             except KeyError:
@@ -163,17 +188,13 @@ class Pred(object):
         self.__decisions = []
         source_switched = False
         if self.__source:
-            if self.__source[0].startswith("z"):
-                rs = r"unit2zone\((\d+),{}\)".format(self.__source[0][1:])
-            else:
-                rs = r"unit2sensor\((\d+),{}\)".format(self.__source[0][1:])
-            r = re.compile(rs)
             for l in changes:
                 try:
-                    for a in self.__lit_ress[l]:
-                        if not source_switched and self.__source and r.match(a):
+                    for (x,u,e) in self.__lit_ress[l]:
+                        if not source_switched and self.__source and x == self.__source[0]:
                             self.__source = self.__source[1:]
+                            print "switched source to {}".format(self.__source)
                             source_switched = True
-                        self.__impossible.remove(a)
+                        self.__impossible.remove((x,u,e))
                 except KeyError:
                     pass
