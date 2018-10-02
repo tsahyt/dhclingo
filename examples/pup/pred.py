@@ -42,6 +42,7 @@ class Pred(object):
         super(Pred, self).__init__()
         self.__decisions = []
         self.__source = set()
+        self.__units = []
         self.__instance = nx.Graph()
         self.__impossible = set()
         self.__lit_ress = dict()
@@ -49,11 +50,6 @@ class Pred(object):
 
     def init(self, init):
         for a in init.symbolic_atoms:
-            if str(a.symbol).startswith("zone2sensor("):
-                zone = "z{}".format(a.symbol.arguments[0])
-                sensor = "s{}".format(str(a.symbol.arguments[1]))
-                self.__source.add(zone)
-                self.__instance.add_edge(zone, sensor)
             if str(a.symbol).startswith("unit2zone(") or str(
                 a.symbol
             ).startswith("unit2sensor("):
@@ -65,8 +61,16 @@ class Pred(object):
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
+            elif str(a.symbol).startswith("zone2sensor("):
+                zone = "z{}".format(a.symbol.arguments[0])
+                sensor = "s{}".format(str(a.symbol.arguments[1]))
+                self.__source.add(zone)
+                self.__instance.add_edge(zone, sensor)
+            elif str(a.symbol).startswith("comUnit("):
+                n = int(str(a.symbol.arguments[0]))
+                self.__units.append(Unit(n))
         self.__source = sorted(list(self.__source))
-        print self.__source
+        self.__units = sorted(self.__units)
 
     def bf_ordering(self, start):
         G = self.__instance
@@ -149,7 +153,6 @@ class Pred(object):
                 lit = self.__res_lits[predicate]
                 if predicate in self.__impossible:
                     continue
-                print "decide {}".format(predicate)
                 return lit
             except KeyError:
                 print "unknown unit"
@@ -169,10 +172,8 @@ class Pred(object):
                 try:
                     for a in self.__lit_ress[abs(l)]:
                         if not source_switched and self.__source and r.match(a):
-                            print "source {}, {} undone".format(self.__source[0],a)
                             self.__source = self.__source[1:]
                             source_switched = True
-                        print "undoing {}".format(a)
                         self.__impossible.remove(a)
                 except KeyError:
                     pass
