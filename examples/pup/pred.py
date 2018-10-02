@@ -51,20 +51,7 @@ class Pred(object):
 
     def init(self, init):
         for a in init.symbolic_atoms:
-            if str(a.symbol).startswith("unit2zone(") or str(
-                a.symbol
-            ).startswith("unit2sensor("):
-                l = init.solver_literal(a.literal)
-                u = int(str(a.symbol.arguments[0]))
-                e = int(str(a.symbol.arguments[1]))
-                try:
-                    self.__lit_ress[l].add(('s',u,e))
-                except KeyError:
-                    self.__lit_ress[l] = set([('s',u,e)])
-                self.__res_lits[str(a.symbol)] = l
-                init.add_watch(l)
-                init.add_watch(-l)
-            elif str( a.symbol).startswith("unit2sensor("):
+            if str(a.symbol).startswith("unit2zone("):
                 l = init.solver_literal(a.literal)
                 u = int(str(a.symbol.arguments[0]))
                 e = int(str(a.symbol.arguments[1]))
@@ -72,6 +59,17 @@ class Pred(object):
                     self.__lit_ress[l].add(('z',u,e))
                 except KeyError:
                     self.__lit_ress[l] = set([('z',u,e)])
+                self.__res_lits[str(a.symbol)] = l
+                init.add_watch(l)
+                init.add_watch(-l)
+            elif str(a.symbol).startswith("unit2sensor("):
+                l = init.solver_literal(a.literal)
+                u = int(str(a.symbol.arguments[0]))
+                e = int(str(a.symbol.arguments[1]))
+                try:
+                    self.__lit_ress[l].add(('s',u,e))
+                except KeyError:
+                    self.__lit_ress[l] = set([('s',u,e)])
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
@@ -166,6 +164,7 @@ class Pred(object):
         if not self.__decisions: 
             self.make_decisions()
             self.__decisions.reverse()
+        print self.__impossible
         while self.__decisions:
             (elem, unit) = self.__decisions.pop()
             predicate = "{}({},{})".format(
