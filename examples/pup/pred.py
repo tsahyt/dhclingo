@@ -55,9 +55,9 @@ class Pred(object):
             ).startswith("unit2sensor("):
                 l = init.solver_literal(a.literal)
                 try:
-                    self.__lit_ress[abs(l)].add(str(a.symbol))
+                    self.__lit_ress[l].add(str(a.symbol))
                 except KeyError:
-                    self.__lit_ress[abs(l)] = set([str(a.symbol)])
+                    self.__lit_ress[l] = set([str(a.symbol)])
                 self.__res_lits[str(a.symbol)] = l
                 init.add_watch(l)
                 init.add_watch(-l)
@@ -170,7 +170,7 @@ class Pred(object):
             r = re.compile(rs)
             for l in changes:
                 try:
-                    for a in self.__lit_ress[abs(l)]:
+                    for a in self.__lit_ress[l]:
                         if not source_switched and self.__source and r.match(a):
                             self.__source = self.__source[1:]
                             source_switched = True
