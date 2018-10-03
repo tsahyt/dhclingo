@@ -65,9 +65,9 @@ freeUnit(U) :- not usedUnit(U), comUnit(U).
 % Pred prefers units that are already connected to elements close in the input
 % graph. If no such preferred unit can be found, we use a new unit (see above)
 preferredUnit(z,Z,U,1) :- unit2sensor(U,S), zone2sensor(Z,S).
-preferredUnit(s,S,U,1) :- unit2zone(U,Z), zone2sensor(Z,S).
+preferredUnit(d,S,U,1) :- unit2zone(U,Z), zone2sensor(Z,S).
 preferredUnit(z,Z,U,0) :- unit2zone(U,Z2), zone2sensor(Z,S), zone2sensor(Z2,S).
-preferredUnit(s,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2).
+preferredUnit(d,S,U,0) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2).
 
 #heuristic unit2zone(U,Z) : 
     visitedAt(z,Z,L), usedUnit(U), preferredUnit(z,Z,U,W). [W@-L, true]
