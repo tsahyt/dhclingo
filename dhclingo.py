@@ -156,7 +156,6 @@ class Declarative(object):
             try:
                 model = next(handle)
                 self.__persist(model)
-                hlog.debug("model: {}".format(model))
                 decision = self.__find_heuristic_atom(model)
                 t1 = time.time()
                 hlog.info("online decision took {}s".format(t1 - t0))
