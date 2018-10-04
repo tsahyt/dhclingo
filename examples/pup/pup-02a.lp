@@ -12,6 +12,7 @@ zone2sensor(2,4).
 zone2sensor(3,3).
 zone2sensor(3,5).
 zone2sensor(3,6).
+zone2sensor(10,6).
 zone2sensor(10,17).
 zone2sensor(10,19).
 zone2sensor(11,2).
