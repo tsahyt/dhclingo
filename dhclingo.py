@@ -207,7 +207,8 @@ class Declarative(object):
         syms = [x for x in model.symbols(atoms=True) if x.name == "_heuristic"
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
-        syms = sorted(syms)
+        
+        syms = sorted(syms,key=lambda x: str(x.arguments[0]))
         syms_s = sorted(syms,key=self.__level_weight)
         if syms_s:
             return syms_s[-1]
@@ -267,14 +268,15 @@ class Declarative(object):
                 pass
 
     def undo(self, thread_id, assign, changes):
-        hlog.debug("undo {}".format(changes))
         self.__offline_decisions = []
         for l in changes:
             try:
                 for e in self.__lit_watches[l]:
+                    hlog.debug("undo {}".format(e))
                     self.__externals[e] = False
                     self.__impossible.remove(e)
                 for e in self.__lit_watches[-l]:
+                    hlog.debug("undo {}".format(e))
                     self.__externals[e] = False
                     self.__impossible.remove(e)
             except KeyError:
