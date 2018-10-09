@@ -208,8 +208,8 @@ class Declarative(object):
                 and len(x.arguments) == 4
                 and str(x.arguments[0]) not in self.__impossible]
         
-        syms = sorted(syms,key=lambda x: str(x.arguments[0]))
-        syms_s = sorted(syms,key=self.__level_weight)
+        syms_s = sorted(sorted(syms, key=lambda x: str(x.arguments[0]), reverse=True),key=self.__level_weight)
+        hlog.debug("decisions: {}".format(syms_s))
         if syms_s:
             return syms_s[-1]
         else:
