@@ -19,6 +19,7 @@ class Declarative(object):
     def __init__(self, mfile, offline, btrack):
         super(Declarative, self).__init__()
 
+        self.__dumpcount = 0
         self.__stats = Statistics()
 
         # load heuristic and instance
@@ -93,15 +94,21 @@ class Declarative(object):
         stepsolver = clingo.Control()
         hlog.debug("building heuristic program")
         facts = 0
+        self.__lastprog = []
         with stepsolver.builder() as b:
             for stmt in self.__program:
                 b.add(stmt)
+                self.__lastprog.append(str(stmt))
             for e in self.__externals:
                 if self.__externals[e] == True: 
-                    clingo.parse_program("{}.".format(e), lambda a: b.add(a))
+                    stmt = "{}.".format(e)
+                    clingo.parse_program(stmt, lambda a: b.add(a))
+                    self.__lastprog.append(stmt)
                     facts += 1
             for p in self.__persisted:
-                clingo.parse_program("{}.".format(p), lambda a: b.add(a))
+                stmt = "{}.".format(p)
+                clingo.parse_program(stmt, lambda a: b.add(a))
+                self.__lastprog.append(stmt)
                 facts += 1
         hlog.info("heuristic program with {} added facts".format(facts))
         hlog.debug("grounding heuristic program")
@@ -162,7 +169,10 @@ class Declarative(object):
                 if decision:
                     return self.__make_decision(vsids, decision)
                 else:
-                    hlog.warning("No decision made by heuristic, falling back")
+                    self.__dumpcount += 1
+                    hlog.warning("No decision made by heuristic, falling back, dumping program to /tmp/dump-{}.lp".format(self.__dumpcount))
+                    with open("/tmp/dump-{}.lp".format(self.__dumpcount), 'w') as f:
+                        f.write("\n".join(self.__lastprog))
                     return vsids
             except StopIteration:
                 hlog.warning("found no model!")

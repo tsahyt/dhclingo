@@ -86,4 +86,5 @@ usedAllSources :- N = #count { X : usedSource(X) }, M = #count { Z : zone(Z) }, 
 
 #heuristic _resign : usedAllSources, not sourced. [0@0, true]
 
+% fix ordering of partner units
 #heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
