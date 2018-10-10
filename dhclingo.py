@@ -282,6 +282,7 @@ class Declarative(object):
                 pass
 
     def check(self, a):
+        hlog.debug("model found")
         hlog.info("statistics: one step backtrackings: {}".format(
             self.__stats.get_onestep()))
 
