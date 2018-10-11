@@ -10,6 +10,8 @@ import os
 hlog = logging.getLogger("heuristic")
 if "LOG" in list(os.environ.keys()):
     loglevel = int(os.environ["LOG"])
+else:
+    loglevel = 0
 
 if loglevel == 1:
     logging.basicConfig(level=logging.INFO)
