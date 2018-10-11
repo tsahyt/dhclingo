@@ -287,7 +287,7 @@ class Declarative(object):
 
     def undo(self, thread_id, assign, changes):
         self.__offline_decisions = []
-        hlog.debug("undo set: {}".format(changes))
+        # hlog.debug("undo set: {}".format(changes))
         for l in changes:
             try:
                 for e in self.__lit_watches[l]:

@@ -10,13 +10,11 @@ unit(U) :- comUnit(U).
 :- unit(U), 3 { unit2zone(U,Z) : zone(Z) }.
 :- unit(U), 3 { unit2sensor(U,S) : sensor(S) }.
 
-partnerunits(U,P) :- unit2zone(U,Z), zone2sensor(Z,S), unit2sensor(P,S), U != P.
+{ partnerunits(U,P) } :- unit(U), unit(P), U != P.
+:- not partnerunits(U,P), unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
+
 partnerunits(U,P) :- partnerunits(P,U), unit(U), unit(P).
 :- unit(U), maxPU(M), M+1 { partnerunits(U,P) : unit(P) }.
-
-unit2zone(1,1). unit2zone(1,11). unit2zone(2,2). unit2zone(3,3). unit2zone(3,12).
-unit2sensor(1,1). unit2sensor(1,2). unit2sensor(2,20). unit2sensor(2,3). unit2sensor(3,4).
-partnerunits(U,P) :- comUnit(U), comUnit(P), P = U + 1.
 
 % Heuristic Base -----------------------------------------------------------------
 #program base_heuristic.
