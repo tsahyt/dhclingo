@@ -162,6 +162,7 @@ class Declarative(object):
         return vsids
 
     def __decide_online(self,vsids):
+        hlog.debug("impossible: {}".format(sorted(list(self.__impossible))))
         t0 = time.time()
         stepsolver = self.__make_step_solver()
         self.__last_decision = None

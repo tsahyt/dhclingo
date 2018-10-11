@@ -22,8 +22,8 @@ maxOrdinal(X) :- X = Z + S, Z = #max { A : zone(A) },
     S = #max { A : sensor(A) }.
 step(0..M) :- maxOrdinal(M).
 
-1 { source(Z) : zone(Z) } 1.
-%source(1).
+% 1 { source(Z) : zone(Z) } 1.
+source(1).
 
 visitedAt(z,Z,1) :- source(Z).
 visitedAt(s,Y,N+1) :- visitedAt(z,X,N), zone2sensor(X,Y), maxOrdinal(M), N<M, not step(K) : visitedAt(s,Y,K), K<N.
@@ -68,12 +68,14 @@ minPreferredUnit(U) :- #min { X : preferredUnit(_,_,X,_); 1 } = U, comUnit(U).
 #heuristic unit2sensor(U,S) : visitedAt(s,S,L), minPreferredUnit(Min), maxUnit(Max), Min <= U, U <= Max, comUnit(U). [-U@L+1, true]
 
 % if no source is known, pick the lexicographically smallest possible
-sourced :- source(X).
-_persist(usedSource(X)) :- source(X).
-usedAllSources :- N = #count { X : usedSource(X) }, M = #count { Z : zone(Z) }, N = M.
+%sourced :- source(X).
+%_persist(usedSource(X)) :- source(X).
+%usedAllSources :- N = #count { X : usedSource(X) }, M = #count { Z : zone(Z) }, N = M.
+%
+%#heuristic source(Z) : zone(Z), not sourced, not usedSource(Z). [Z@0, true]
+%
+%#heuristic _resign : usedAllSources, not sourced. [0@0, true]
 
-#heuristic source(Z) : zone(Z), not sourced, not usedSource(Z). [Z@0, true]
-
-#heuristic _resign : usedAllSources, not sourced. [0@0, true]
+#heuristic _resign : maxLevel(M). [0@M+2, true]
 
 #heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
