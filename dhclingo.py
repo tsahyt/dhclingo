@@ -8,9 +8,12 @@ import copy
 import os
 
 hlog = logging.getLogger("heuristic")
-if "LOG" in list(os.environ.keys()) and os.environ["LOG"] == '1':
+if "LOG" in list(os.environ.keys()):
+    loglevel = int(os.environ["LOG"])
+
+if loglevel == 1:
     logging.basicConfig(level=logging.INFO)
-elif "LOG" in list(os.environ.keys()) and os.environ["LOG"] == '2':
+elif loglevel >= 2:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.ERROR)
@@ -94,21 +97,22 @@ class Declarative(object):
         stepsolver = clingo.Control()
         hlog.debug("building heuristic program")
         facts = 0
-        self.__lastprog = []
+        if loglevel == 3:
+            self.__lastprog = []
         with stepsolver.builder() as b:
             for stmt in self.__program:
                 b.add(stmt)
-                self.__lastprog.append(str(stmt))
+                if loglevel == 3: self.__lastprog.append(str(stmt))
             for e in self.__externals:
                 if self.__externals[e] == True: 
                     stmt = "{}.".format(e)
                     clingo.parse_program(stmt, lambda a: b.add(a))
-                    self.__lastprog.append(stmt)
+                    if loglevel == 3: self.__lastprog.append(stmt)
                     facts += 1
             for p in self.__persisted:
                 stmt = "{}.".format(p)
                 clingo.parse_program(stmt, lambda a: b.add(a))
-                self.__lastprog.append(stmt)
+                if loglevel == 3: self.__lastprog.append(stmt)
                 facts += 1
         hlog.info("heuristic program with {} added facts".format(facts))
         hlog.debug("grounding heuristic program")
@@ -170,9 +174,12 @@ class Declarative(object):
                     return self.__make_decision(vsids, decision)
                 else:
                     self.__dumpcount += 1
-                    hlog.warning("No decision made by heuristic, falling back, dumping program to /tmp/dump-{}.lp".format(self.__dumpcount))
-                    with open("/tmp/dump-{}.lp".format(self.__dumpcount), 'w') as f:
-                        f.write("\n".join(self.__lastprog))
+                    if loglevel == 3:
+                        hlog.warning("No decision made by heuristic, falling back, dumping program to /tmp/dump-{}.lp".format(self.__dumpcount))
+                        with open("/tmp/dump-{}.lp".format(self.__dumpcount), 'w') as f:
+                            f.write("\n".join(self.__lastprog))
+                    else:
+                        hlog.warning("No decision made by heuristic, falling back")
                     return vsids
             except StopIteration:
                 hlog.warning("found no model!")
