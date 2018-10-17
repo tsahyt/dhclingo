@@ -43,7 +43,7 @@ class Declarative(object):
         self.__externals = dict()
         self.__lit_watches = dict()
         self.__res_lits = dict()
-        self.__impossible = set()
+        self.__impossible = set([0])
         self.__persisted = set()
 
         if offline:
@@ -62,6 +62,11 @@ class Declarative(object):
             self.__lit_watches[lit].add(f)
         except KeyError:
             self.__lit_watches[lit] = set([f])
+
+    def __res_lit(self, a):
+        if str(a) in ["_resign", "_vsids"]:
+            return 0
+        return abs(self.__res_lits[str(a)])
 
     def __process_hprog(self, a):
         self.__collect_watches(self, a)
@@ -133,7 +138,9 @@ class Declarative(object):
     
     def __decide_offline(self, vsids):
         self.__last_decision = None
-        self.__offline_decisions = [x for x in self.__offline_decisions if str(x.arguments[0]) not in self.__impossible]
+        self.__offline_decisions = [x for x in 
+                self.__offline_decisions 
+                if self.__res_lit(x.arguments[0]) not in self.__impossible]
         if not self.__offline_decisions:
             t0 = time.time()
             stepsolver = self.__make_step_solver()
@@ -155,14 +162,13 @@ class Declarative(object):
 
         while self.__offline_decisions:
             d = self.__offline_decisions.pop()
-            if str(d.arguments[0]) not in self.__impossible:
+            if self.__res_lit(d.arguments[0]) not in self.__impossible:
                 return self.__make_decision(vsids, d)
 
         hlog.warning("ran out of decisions, using vsids {}".format(vsids))
         return vsids
 
     def __decide_online(self,vsids):
-        hlog.debug("impossible: {}".format(sorted(list(self.__impossible))))
         t0 = time.time()
         stepsolver = self.__make_step_solver()
         self.__last_decision = None
@@ -226,7 +232,7 @@ class Declarative(object):
         """
         syms = [x for x in model.symbols(atoms=True) if x.name == "_heuristic"
                 and len(x.arguments) == 4
-                and str(x.arguments[0]) not in self.__impossible]
+                and self.__res_lit(x.arguments[0]) not in self.__impossible]
         
         syms_s = sorted(sorted(syms, key=lambda x: str(x.arguments[0])),key=self.__level_weight)
         hlog.debug("decisions: {}".format(syms_s))
@@ -271,18 +277,17 @@ class Declarative(object):
                 hlog.debug("clearing cache after one-step backtracking")
                 self.__offline_decisions = []
         for l in changes:
+            self.__impossible.add(abs(l))
             try:
                 for e in self.__lit_watches[l]:
                     hlog.debug("propagate {} ({})".format(e,l))
                     self.__externals[e] = True
-                    self.__impossible.add(str(e))
             except KeyError:
                 pass
             try:
                 for e in self.__lit_watches[-l]:
                     hlog.debug("propagate -{} ({})".format(e,l))
                     self.__externals[e] = False
-                    self.__impossible.add(str(e))
             except KeyError:
                 pass
 
@@ -290,6 +295,7 @@ class Declarative(object):
         self.__offline_decisions = []
         # hlog.debug("undo set: {}".format(changes))
         for l in changes:
+            assert(abs(l) in self.__impossible)
             try:
                 for e in self.__lit_watches[l]:
                     hlog.debug("undo {} ({})".format(e,l))
