@@ -69,8 +69,12 @@ rule1 :- rule1(_,_,_).
 
 % Second, try to place it on a new unit
 rule2(U,A,X) :- not rule1, freshUnit(U), currentElem(A,X).
-#heuristic unit2sensor(U,S) : rule2(U,s,S). [0@0, true]
-#heuristic unit2zone(U,Z) : rule2(U,z,Z). [0@0, true]
+#heuristic unit2sensor(U,S) : rule2(U,s,S). [0@1, true]
+#heuristic unit2zone(U,Z) : rule2(U,z,Z). [0@1, true]
 
-#heuristic _resign : maxLevel(M). [0@M+2, true]
+% Lastly try all preceding units, in descending order
+#heuristic unit2sensor(U,S) : currentElem(s,S), comUnit(U), lastUnit(L), U <= L. [U@2, true]
+#heuristic unit2zone(U,Z) : currentElem(z,Z), comUnit(U), lastUnit(L), U <= L. [U@2, true]
+
+#heuristic _resign. [0@3, true]
 #heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
