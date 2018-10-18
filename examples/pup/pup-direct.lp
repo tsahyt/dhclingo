@@ -47,10 +47,8 @@ full(U,z) :- comUnit(U), 2 = #count { Z : unit2zone(U,Z) }.
 full(U,s) :- comUnit(U), 2 = #count { S : unit2sensor(U,S) }.
 
 % Current level of the ordering
-currentLevel(N) :- 
-    #max { L : visitedAt(z,Z,L), unit2zone(_,Z)
-         ; L : visitedAt(s,S,L), unit2sensor(_,S)
-         ; 1 } = N.
+unusedOn(N) :- visitedAt(A,X,N), not usedElem(A,X).
+currentLevel(N) :- N = #min { X : unusedOn(X) }.
 
 % Current element, lexicographically smallest in current level
 usedElem(z,X) :- unit2zone(_,X).

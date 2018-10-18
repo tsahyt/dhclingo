@@ -177,6 +177,8 @@ class Declarative(object):
                 model = next(handle)
                 self.__persist(model)
                 decision = self.__find_heuristic_atom(model)
+                if loglevel == 3:
+                    hlog.debug("model: {}".format(model))
                 t1 = time.time()
                 hlog.info("online decision took {}s".format(t1 - t0))
                 if decision:
