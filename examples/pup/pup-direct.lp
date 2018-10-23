@@ -9,10 +9,10 @@ sensor(S) :- zone2sensor(Z,S).
 :- comUnit(U), 3 { unit2zone(U,Z) : zone(Z) }.
 :- comUnit(U), 3 { unit2sensor(U,S) : sensor(S) }.
 
-{ partnerunits(U,P) } :- comUnit(U), comUnit(P), U != P.
-:- not partnerunits(U,P), unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
-
+% { partnerunits(U,P) } :- comUnit(U), comUnit(P), U != P.
+partnerunits(U,P) :- unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
 partnerunits(U,P) :- partnerunits(P,U), comUnit(U), comUnit(P).
+
 :- comUnit(U), maxPU(M), M+1 { partnerunits(U,P) : comUnit(P) }.
 
 % Heuristic Base -----------------------------------------------------------------
@@ -63,18 +63,19 @@ preferredUnit(s,S,U) :- unit2sensor(U,S2), zone2sensor(Z,S), zone2sensor(Z,S2).
 
 % First, try to place the current element at a preferred unit
 rule1(U,A,X) :- preferredUnit(A,X,U), currentElem(A,X), not full(U,A).
-rule1 :- rule1(_,_,_).
 #heuristic unit2sensor(U,S) : rule1(U,s,S). [0@0, true]
 #heuristic unit2zone(U,Z) : rule1(U,z,Z). [0@0, true]
 
 % Second, try to place it on a new unit
-rule2(U,A,X) :- not rule1, freshUnit(U), currentElem(A,X).
-#heuristic unit2sensor(U,S) : rule2(U,s,S). [0@1, true]
-#heuristic unit2zone(U,Z) : rule2(U,z,Z). [0@1, true]
+rule2(U,z,X) :- not rule1(_,_,_), freshUnit(U), currentElem(z,X), not -unit2zone(U,X).
+rule2(U,s,X) :- not rule1(_,_,_), freshUnit(U), currentElem(s,X), not -unit2sensor(U,X).
+#heuristic unit2sensor(U,S) : rule2(U,s,S). [0@0, true]
+#heuristic unit2zone(U,Z) : rule2(U,z,Z). [0@0, true]
 
 % Lastly try all preceding units, in descending order
-#heuristic unit2sensor(U,S) : currentElem(s,S), comUnit(U), lastUnit(L), U <= L. [U@2, true]
-#heuristic unit2zone(U,Z) : currentElem(z,Z), comUnit(U), lastUnit(L), U <= L. [U@2, true]
+rule3(U,A,X) :- not rule2(_,_,_), currentElem(A,X), comUnit(U), lastUnit(L), U <= L.
+#heuristic unit2sensor(U,X) : rule3(U,s,X). [U@0, true]
+#heuristic unit2zone(U,X) : rule3(U,z,X). [U@0, true]
 
 #heuristic _resign. [0@3, true]
-#heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
+% #heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]

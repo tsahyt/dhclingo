@@ -7,6 +7,8 @@ import time
 import copy
 import os
 
+from enum import Enum
+
 hlog = logging.getLogger("heuristic")
 if "LOG" in list(os.environ.keys()):
     loglevel = int(os.environ["LOG"])
@@ -19,6 +21,12 @@ elif loglevel >= 2:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.ERROR)
+
+
+class TruthValue(Enum):
+    true = 1
+    false = 2
+    free = 3
 
 class Declarative(object):
     def __init__(self, mfile, offline, btrack):
@@ -62,6 +70,10 @@ class Declarative(object):
             self.__lit_watches[lit].add(f)
         except KeyError:
             self.__lit_watches[lit] = set([f])
+
+    def __impossible_atoms(self):
+        for i in self.__impossible:
+            pass
 
     def __res_lit(self, a):
         if str(a) in ["_resign", "_vsids"]:
@@ -111,8 +123,13 @@ class Declarative(object):
                 b.add(stmt)
                 if loglevel == 3: self.__lastprog.append(str(stmt))
             for e in self.__externals:
-                if self.__externals[e] == True: 
+                if self.__externals[e] == TruthValue.true:
                     stmt = "{}.".format(e)
+                    clingo.parse_program(stmt, lambda a: b.add(a))
+                    if loglevel == 3: self.__lastprog.append(stmt)
+                    facts += 1
+                elif self.__externals[e] == TruthValue.false:
+                    stmt = "-{}.".format(e)
                     clingo.parse_program(stmt, lambda a: b.add(a))
                     if loglevel == 3: self.__lastprog.append(stmt)
                     facts += 1
@@ -255,7 +272,7 @@ class Declarative(object):
 
                 # store as external
                 f = clingo.Function(name, a.symbol.arguments)
-                self.__externals[f] = a.is_fact
+                self.__externals[f] = TruthValue.true if a.is_fact else TruthValue.free
                 self.__remember_watch(lit, f)
             if a.is_fact:
                 self.__add_fact(a.symbol)
@@ -283,13 +300,13 @@ class Declarative(object):
             try:
                 for e in self.__lit_watches[l]:
                     hlog.debug("propagate {} ({})".format(e,l))
-                    self.__externals[e] = True
+                    self.__externals[e] = TruthValue.true
             except KeyError:
                 pass
             try:
                 for e in self.__lit_watches[-l]:
                     hlog.debug("propagate -{} ({})".format(e,l))
-                    self.__externals[e] = False
+                    self.__externals[e] = TruthValue.false
             except KeyError:
                 pass
 
@@ -301,14 +318,14 @@ class Declarative(object):
             try:
                 for e in self.__lit_watches[l]:
                     hlog.debug("undo {} ({})".format(e,l))
-                    self.__externals[e] = False
+                    self.__externals[e] = TruthValue.free
                     self.__impossible.remove(e)
             except KeyError:
                 pass
             try:
                 for e in self.__lit_watches[-l]:
                     hlog.debug("undo {} ({})".format(e,l))
-                    self.__externals[e] = False
+                    self.__externals[e] = TruthValue.free
                     self.__impossible.remove(e)
             except KeyError:
                 pass
