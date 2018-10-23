@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="pandoc">
+  <meta name="author" content="Dipl.-Ing. Paul Ogris">
+  <meta name="dcterms.date" content="2018-09-11">
+  <title>Declarative Heuristics for ASP</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="reveal.js/css/reveal.css">
+  <style type="text/css">
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <style type="text/css">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; position: absolute; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; }
+pre.numberSource a.sourceLine:empty
+  { position: absolute; }
+pre.numberSource a.sourceLine::before
+  { content: attr(data-line-number);
+    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="reveal.js/css/theme/white.css" id="theme">
+  <!-- Printing and PDF exports -->
+  <script>
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = window.location.search.match( /print-pdf/gi ) ? 'reveal.js/css/print/pdf.css' : 'reveal.js/css/print/paper.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+  <!--[if lt IE 9]>
+  <script src="reveal.js/lib/js/html5shiv.js"></script>
+  <![endif]-->
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide">
+  <h1 class="title">Declarative Heuristics for ASP</h1>
+  <p class="author">Dipl.-Ing. Paul Ogris</p>
+  <p class="date">2018-09-11</p>
+</section>
+
+<section class="slide level2">
+
+<p>Answer Set Programming (<em>ASP</em>)</p>
+<ul>
+<li class="fragment">is a declarative programming paradigm</li>
+<li class="fragment">provides a means to easily model hard combinatorial search problems</li>
+</ul>
+<aside class="notes">
+<dl>
+<dt>Declarative</dt>
+<dd>Describe programs in terms of “what” rather than “how”
+</dd>
+<dt>Easy Modelling</dt>
+<dd>Saving development cost
+</dd>
+</dl>
+</aside>
+</section>
+<section class="slide level2">
+
+<p>ASP has been used for modelling e.g.</p>
+<ul>
+<li class="fragment">Industrial Configuration Problems <span class="citation" data-cites="aschinger_optimization_2011">(Aschinger et al. <a href="#/ref-aschinger_optimization_2011">2011</a>)</span></li>
+<li class="fragment">Curriculum-Based Course Timetabling <span class="citation" data-cites="banbara_teaspoon:_2016">(Banbara et al. <a href="#/ref-banbara_teaspoon:_2016">2016</a>)</span></li>
+<li class="fragment">Artificial Music Composition <span class="citation" data-cites="boenn_automatic_2011">(Boenn et al. <a href="#/ref-boenn_automatic_2011">2011</a>)</span></li>
+</ul>
+<div class="fragment">
+<p>Many more can be found in <span class="citation" data-cites="falkner_industrial_2018">(Falkner et al. <a href="#/ref-falkner_industrial_2018">2018</a>)</span></p>
+<aside class="notes">
+<p><span class="citation" data-cites="aschinger_optimization_2011">Aschinger et al. (<a href="#/ref-aschinger_optimization_2011">2011</a>)</span> investigate the Partner Units Problem. A number of zones and sensors need to be managed by control units with limited resources. How to assign those elements to units? PUP is a well studied configuration benchmark.</p>
+<p>CB-CTT is about assigning lectures to time slots under a set of hard (e.g. room availability, curriculum conflicts) and soft constraints (room capacity, travel distance) arising from the domain in education.</p>
+<p><span class="citation" data-cites="boenn_automatic_2011">Boenn et al. (<a href="#/ref-boenn_automatic_2011">2011</a>)</span> describes a system that can automatically compose music based on known rules of harmony, melody, and rhythm in near real-time.</p>
+</aside>
+</div>
+</section>
+<section class="slide level2">
+
+<p><span class="citation" data-cites="aschinger_optimization_2011">Aschinger et al. (<a href="#/ref-aschinger_optimization_2011">2011</a>)</span> tested ASP against other general purpose approaches on the PUP</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">System</th>
+<th style="text-align: center;">Instances Solved (of 48)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">SAT</td>
+<td style="text-align: center;">13</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">CSP</td>
+<td style="text-align: center;">35</td>
+</tr>
+<tr class="odd">
+<td style="text-align: center;"><strong>ASP</strong></td>
+<td style="text-align: center;"><strong>39</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">CPLEX</td>
+<td style="text-align: center;">21</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="slide level2">
+
+<p>No silver bullet, complex instances can still be prohibitively slow</p>
+<div class="fragment">
+<p>Domain-specific heuristics may help!</p>
+</div>
+</section>
+<section id="why-heuristics" class="slide level2">
+<h2>Why Heuristics?</h2>
+<ul>
+<li class="fragment">Specialized solvers outperform ASP</li>
+<li class="fragment">The QuickPup solver <span class="citation" data-cites="teppan_quickpup:_2012">(see Teppan, Friedrich, and Falkner <a href="#/ref-teppan_quickpup:_2012">2012</a>)</span> was able to solve all instances it was benchmarked on, ASP at the time was not</li>
+<li class="fragment">Clingo 5.3 still only solves around 70% of the PUP instances in the ASP competition set in our benchmarks</li>
+</ul>
+</section>
+<section class="slide level2">
+
+<h3 id="pup-with-hwasp">PUP with HWASP</h3>
+<p><img data-src="figures/pup-hwasp.svg" style="border:none; box-shadow:none" /></p>
+<p>Equipped with a domain-specific heuristic written directly into the solver, <span class="citation" data-cites="musitsch_improving_2016">Musitsch (<a href="#/ref-musitsch_improving_2016">2016</a>)</span> was able to solve 100% of tested PUP instances</p>
+</section>
+<section class="slide level2">
+
+<p>How to teach an ASP solver a new heuristic?</p>
+<div class="fragment">
+<p>Modern ASP solvers use some variation of the CDCL algorithm</p>
+</div>
+</section>
+<section class="slide level2">
+
+<p><img data-src="figures/cdcl-flowchart.svg" style="border:none; box-shadow:none; width:60%" /></p>
+<!-- evaluate diagram vs code?
+
+```python
+if unitPropagation(φ,ν) == conflict:
+    return UNSAT
+while not all variables assigned:
+    literal = decide(φ,ν)
+    ν = ν ∪ {literal}
+    if unitPropagation(φ,ν) == conflict:
+        β = conflictAnalysis(φ,ν)
+        if (β < 0):
+            return UNSAT
+        else:
+            backtrack(φ,ν,β)
+return SAT
+```
+-->
+<div class="fragment">
+<p>There is a non-deterministic decision to be made in each iteration!</p>
+</div>
+</section>
+<section class="slide level2">
+
+<p>Let us call the method “<code>decide</code>”. The decision can be made in a variety of ways</p>
+<ul>
+<li class="fragment">General purpose heuristics like <em>VSIDS</em></li>
+<li class="fragment">or <em>domain-specific</em> heuristics</li>
+</ul>
+<aside class="notes">
+<p>VSIDS assigns a weight to literals according to their recent occurrence in conflicts. The weight decays over time as they go unused.</p>
+</aside>
+</section>
+<section><section id="history" class="title-slide slide level1" data-background-color="#a30"><h1>History</h1></section><section id="clingo-domain-heuristics" class="slide level2">
+<h2>Clingo Domain Heuristics</h2>
+<p>Domain heuristics for Clingo introduced in <span class="citation" data-cites="gebser_domain-specific_2013">Gebser et al. (<a href="#/ref-gebser_domain-specific_2013">2013</a>)</span></p>
+<ul>
+<li class="fragment">Allows influencing the general purpose heuristic via modifiers</li>
+<li class="fragment">It is fully declarative</li>
+</ul>
+</section><section class="slide level2">
+
+<p><span class="citation" data-cites="calimeri_combining_2015">Gebser, Ryabokon, and Schenner (<a href="#/ref-calimeri_combining_2015">2015</a>)</span> used this interface to attack the Combined Configuration Problem</p>
+<ol type="1">
+<li class="fragment">A greedy algorithm is presented to calculate an approximate solution first</li>
+<li class="fragment">The “solution” is handed to the solver by giving the solution atoms a higher heuristic value</li>
+<li class="fragment">The solver is then expected to sort out any remaining problems</li>
+</ol>
+</section><section id="ccp-evaluation" class="slide level2">
+<h2>CCP Evaluation</h2>
+<p><img data-src="figures/ccp-exp2.svg" style="border:none; box-shadow:none; width:70%" /></p>
+<p>The combined Greedy &amp; ASP approach was able to solve all 100 instances, versus 54 plain</p>
+</section><section class="slide level2">
+
+<p>However, <strong>expressivity</strong> is limited due to evaluation semantics</p>
+<div class="fragment">
+<p>e.g. a simple bin packing heuristic already requires <em>fixing an ordering upfront</em></p>
+</div>
+</section><section class="slide level2">
+
+<h3 id="best-fit-bin-packing">Best-Fit Bin Packing</h3>
+<p><img data-src="figures/bestfit.svg" style="border:none; box-shadow:none" /></p>
+<ul>
+<li class="fragment">Packing item into best bin requires knowledge of current packing</li>
+<li class="fragment">Aggregate cannot be calculated until <em>all placements are known</em></li>
+<li class="fragment">Workaround results in exponential blowup</li>
+</ul>
+<aside class="notes">
+<ul>
+<li>Bin Packing is the problem of fitting a number of sized items into a number of uniformly sized bins</li>
+<li>Best-Fit picks a bin such that the amount of leftover space is minimal</li>
+<li>Depends on prior assignment!</li>
+<li>Aggregates in heuristic bodies are calculated w.r.t. <em>final answer set</em></li>
+<li>Rules do not fire when needed</li>
+<li>Workaround here relies on ordering. In the general case, all subsets of the aggregate set need to be generated</li>
+</ul>
+</aside>
+</section><section id="hwasp" class="slide level2">
+<h2>HWasp</h2>
+<p><span class="citation" data-cites="dodaro_driving_2016">Dodaro et al. (<a href="#/ref-dodaro_driving_2016">2016</a>)</span> present a low-level interface to the WASP solver, allowing the implementation of domain specific heuristics</p>
+</section><section class="slide level2">
+
+<p><span class="citation" data-cites="musitsch_improving_2016">Musitsch (<a href="#/ref-musitsch_improving_2016">2016</a>)</span> demonstrates great improvements over general purpose heuristics on industrial problems</p>
+<table>
+<thead>
+<tr class="header">
+<th style="text-align: center;">Problem</th>
+<th style="text-align: right;">Clasp</th>
+<th style="text-align: right;">Best Heuristic</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: center;">PUP</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">36</td>
+</tr>
+<tr class="even">
+<td style="text-align: center;">CCP</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">36</td>
+</tr>
+</tbody>
+</table>
+</section><section class="slide level2">
+
+<p>Purely procedural interface, requiring knowledge of solver internals, as well as rebuilding the solver</p>
+<aside class="notes">
+<p>A Python interface exists, but still requires knowledge of the solver internals</p>
+</aside>
+</section></section>
+<section><section id="declarative-heuristics" class="title-slide slide level1" data-background-color="#582"><h1>Declarative Heuristics</h1></section><section class="slide level2">
+
+<p>So far we have</p>
+<ul>
+<li class="fragment">a <strong>declarative</strong> approach with limited expressivity</li>
+<li class="fragment">a procedural option which is difficult to <strong>write and maintain</strong></li>
+</ul>
+<div class="fragment">
+<p>Can we do better?</p>
+</div>
+</section><section class="slide level2">
+
+<p>We want to use ASP to describe heuristics for ASP</p>
+<div class="fragment">
+<p>→ Use a second solver!</p>
+</div>
+</section><section id="how-it-works" class="slide level2">
+<h2>How it works</h2>
+<ul>
+<li class="fragment">User defines two programs
+<ol type="1">
+<li class="fragment"><em>Main</em> program</li>
+<li class="fragment"><em>Heuristic</em> program</li>
+</ol></li>
+<li class="fragment">The heuristic is computed separately <em>as needed</em> to make decisions in the <em>main</em> solver</li>
+<li class="fragment">Main solver tells the heuristic about changes, so it can adapt</li>
+<li class="fragment">Repeat until a solution is found</li>
+</ul>
+</section><section id="overview" class="slide level2">
+<h2>Overview</h2>
+<p><img data-src="figures/sequence-diagram.svg" style="box-shadow:none; border:none; width:60%" /></p>
+</section><section id="proof-of-concept" class="slide level2">
+<h2>Proof Of Concept</h2>
+<ul>
+<li class="fragment">We expose <code>decide</code> from Clasp for external implementation (C or Python)</li>
+<li class="fragment">The external heuristic keeps its own state, does not care about solver internals</li>
+<li class="fragment">Can also register as a propagator to receive updates on watched literals</li>
+<li class="fragment">Our Proof-of-Concept is an external heuristic written in Python handling a second heuristic solver</li>
+<li class="fragment">Registers and manages watched literals as required</li>
+<li class="fragment">Handles caching of decisions</li>
+</ul>
+</section><section id="language" class="slide level2">
+<h2>Language</h2>
+<dl>
+<dt class="fragment">Two Heuristic Parts</dt>
+<dd class="fragment">Split between background knowledge and decision procedure
+</dd>
+<dt class="fragment">Special Atoms</dt>
+<dd class="fragment"><code>vsids</code> and <code>resign</code>
+</dd>
+<dt class="fragment">Persistence</dt>
+<dd class="fragment"><code>#persist</code> can be used to remember decisions between invocations
+</dd>
+</dl>
+<aside class="notes">
+<p><code>vsids</code> switches to VSIDS for <em>one</em> decision, <code>resign</code> is permanent.</p>
+</aside>
+</section><section class="slide level2">
+
+<dl>
+<dt class="fragment">Watching</dt>
+<dd class="fragment"><code>#watch</code> synchronizes an atom from the main program with the heuristic program. Defines inputs to a heuristic
+</dd>
+<dt class="fragment">Decisions</dt>
+<dd class="fragment"><code>#heuristic</code> marks heuristic rules. Rules are weighted like weak constraints to allow fast choice of <em>best</em> decision among many
+</dd>
+</dl>
+</section><section id="example" class="slide level2">
+<h2>Example</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode prolog"><code class="sourceCode prolog"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="dv">1</span> <span class="kw">{</span> place(<span class="dt">I</span><span class="kw">,</span><span class="dt">B</span>) <span class="fu">:</span> bin(<span class="dt">B</span>) <span class="kw">}</span> <span class="dv">1</span> <span class="kw">:-</span> item(<span class="dt">I</span><span class="kw">,</span><span class="dt">_</span>)<span class="kw">.</span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">:-</span> bin(<span class="dt">B</span>)<span class="kw">,</span> capacity(<span class="dt">C</span>)<span class="kw">,</span> <span class="dt">F</span> <span class="dt">&gt;</span> <span class="dt">C</span><span class="kw">,</span> </a>
+<a class="sourceLine" id="cb1-3" data-line-number="3">    <span class="dt">F</span> <span class="kw">=</span> #sum <span class="kw">{</span> <span class="dt">S</span><span class="kw">,</span><span class="dt">I</span> <span class="fu">:</span> item(<span class="dt">I</span><span class="kw">,</span><span class="dt">S</span>)<span class="kw">,</span> place(<span class="dt">I</span><span class="kw">,</span><span class="dt">B</span>) <span class="kw">}.</span></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5">#program dynamic_heuristic<span class="kw">.</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6">#watch place<span class="fu">/</span><span class="dv">2</span><span class="kw">.</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8">placed(<span class="dt">I</span>) <span class="kw">:-</span> place(<span class="dt">I</span><span class="kw">,</span><span class="dt">_</span>)<span class="kw">.</span></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10">#heuristic place(<span class="dt">I</span><span class="kw">,</span><span class="dt">B</span>) <span class="fu">:</span> </a>
+<a class="sourceLine" id="cb1-11" data-line-number="11">    bin(<span class="dt">B</span>)<span class="kw">,</span> item(<span class="dt">I</span><span class="kw">,</span><span class="dt">W</span>)<span class="kw">,</span> capacity(<span class="dt">C</span>)<span class="kw">,</span> not placed(<span class="dt">I</span>)<span class="kw">,</span></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">    <span class="dt">S</span> <span class="kw">=</span> #sum <span class="kw">{</span> <span class="dt">X</span><span class="kw">,</span><span class="dt">I1</span> <span class="fu">:</span> place(<span class="dt">I1</span><span class="kw">,</span><span class="dt">B</span>)<span class="kw">,</span> item(<span class="dt">I1</span><span class="kw">,</span><span class="dt">X</span>) <span class="kw">},</span> </a>
+<a class="sourceLine" id="cb1-13" data-line-number="13">    <span class="dt">C</span> <span class="dt">&gt;=</span> <span class="dt">S</span> <span class="dt">+</span> <span class="dt">W</span><span class="kw">.</span> [<span class="dt">S</span><span class="fu">+</span><span class="dt">I</span><span class="fu">@</span><span class="dv">0</span>, <span class="kw">true</span>]</a></code></pre></div>
+<aside class="notes">
+<p>Note that there is no ordering required in the aggregate, and that there is a negative literal in the body</p>
+</aside>
+</section><section id="observations" class="slide level2">
+<h2>Observations</h2>
+<ul>
+<li class="fragment">Fully declarative</li>
+<li class="fragment">Negation behaves as ASP users expect</li>
+<li class="fragment">Aggregates can <em>always</em> get evaluated</li>
+</ul>
+</section><section class="slide level2">
+
+<p>Thank you for your attention</p>
+</section><section id="references" class="slide level2 unnumbered" style="font-size:12pt">
+<h2>References</h2>
+<div id="refs" class="references">
+<div id="ref-aschinger_optimization_2011">
+<p>Aschinger, Markus, Conrad Drescher, Gerhard Friedrich, Georg Gottlob, Peter Jeavons, Anna Ryabokon, and Evgenij Thorstensen. 2011. “Optimization Methods for the Partner Units Problem.” In <em>Integration of AI and OR Techniques in Constraint Programming for Combinatorial Optimization Problems</em>, 4–19. Springer. <a href="http://link.springer.com/10.1007%2F978-3-642-21311-3_4">http://link.springer.com/10.1007%2F978-3-642-21311-3_4</a>.</p>
+</div>
+<div id="ref-banbara_teaspoon:_2016">
+<p>Banbara, Mutsunori, Katsumi Inoue, Benjamin Kaufmann, Torsten Schaub, Takehide Soh, Naoyuki Tamura, and Philipp Wanko. 2016. “Teaspoon: Solving the Curriculum-Based Course Timetabling Problems with Answer Set Programming.” In <em>Proceedings of the Eleventh International Conference of the Practice and Theory of Automated Timetabling (PATAT 2016)</em>, 13–32.</p>
+</div>
+<div id="ref-boenn_automatic_2011">
+<p>Boenn, Georg, Martin Brain, Marina De Vos, and John Ffitch. 2011. “Automatic Music Composition Using Answer Set Programming.” <em>Theory and Practice of Logic Programming</em> 11 (2):397–427. <a href="https://doi.org/10.1017/S1471068410000530" class="uri">https://doi.org/10.1017/S1471068410000530</a>.</p>
+</div>
+<div id="ref-dodaro_driving_2016">
+<p>Dodaro, Carmine, Philip Gasteiger, Nicola Leone, Benjamin Musitsch, Francesco Ricca, and Konstantin Schekotihin. 2016. “Driving CDCL Search.” <em>arXiv:1611.05190 [Cs]</em>, November. <a href="http://arxiv.org/abs/1611.05190" class="uri">http://arxiv.org/abs/1611.05190</a>.</p>
+</div>
+<div id="ref-falkner_industrial_2018">
+<p>Falkner, Andreas, Gerhard Friedrich, Konstantin Schekotihin, Richard Taupe, and Erich C. Teppan. 2018. “Industrial Applications of Answer Set Programming.” <em>KI - Künstliche Intelligenz</em>, June. <a href="https://doi.org/10.1007/s13218-018-0548-6" class="uri">https://doi.org/10.1007/s13218-018-0548-6</a>.</p>
+</div>
+<div id="ref-gebser_domain-specific_2013">
+<p>Gebser, Martin, Benjamin Kaufmann, Javier Romero, Ramón Otero, Torsten Schaub, and Philipp Wanko. 2013. “Domain-Specific Heuristics in Answer Set Programming.” In <em>AAAI</em>. Citeseer. <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.447.8848&amp;rep=rep1&amp;type=pdf" class="uri">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.447.8848&amp;rep=rep1&amp;type=pdf</a>.</p>
+</div>
+<div id="ref-calimeri_combining_2015">
+<p>Gebser, Martin, Anna Ryabokon, and Gottfried Schenner. 2015. “Combining Heuristics for Configuration Problems Using Answer Set Programming.” In <em>Logic Programming and Nonmonotonic Reasoning</em>, edited by Francesco Calimeri, Giovambattista Ianni, and Miroslaw Truszczynski, 9345:384–97. Cham: Springer International Publishing. <a href="https://doi.org/10.1007/978-3-319-23264-5_32" class="uri">https://doi.org/10.1007/978-3-319-23264-5_32</a>.</p>
+</div>
+<div id="ref-musitsch_improving_2016">
+<p>Musitsch, Benjamin. 2016. “Improving the Performance of ASP Solvers with Domain-Heuristics,” 125.</p>
+</div>
+<div id="ref-teppan_quickpup:_2012">
+<p>Teppan, Erich Christian, Gerhard Friedrich, and Andreas A. Falkner. 2012. “QuickPup: A Heuristic Backtracking Algorithm for the Partner Units Configuration Problem.” In <em>IAAI</em>. <a href="http://www.aaai.org/ocs/index.php/IAAI/IAAI-12/paper/viewFile/4793%26lt%3B/5449">http://www.aaai.org/ocs/index.php/IAAI/IAAI-12/paper/viewFile/4793%26lt%3B/5449</a>.</p>
+</div>
+</div>
+</section></section>
+    </div>
+  </div>
+
+  <script src="reveal.js/lib/js/head.min.js"></script>
+  <script src="reveal.js/js/reveal.js"></script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://github.com/hakimel/reveal.js#configuration
+      Reveal.initialize({
+        // Display controls in the bottom right corner
+        controls: false,
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+        // Push each slide change to the browser history
+        history: true,
+
+        // Optional reveal.js plugins
+        dependencies: [
+          { src: 'reveal.js/lib/js/classList.js', condition: function() { return !document.body.classList; } },
+          { src: 'reveal.js/plugin/zoom-js/zoom.js', async: true },
+          { src: 'reveal.js/plugin/notes/notes.js', async: true }
+        ]
+      });
+    </script>
+    </body>
+</html>
