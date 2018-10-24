@@ -63,6 +63,7 @@ class Declarative(object):
         self.__btrack = btrack
 
         self.__last_decision = None
+        self.__unresolved_conflict = False
 
     def __remember_watch(self, lit, f):
         self.__res_lits[str(f)] = lit
@@ -203,11 +204,11 @@ class Declarative(object):
                 else:
                     self.__dumpcount += 1
                     if loglevel == 3:
-                        hlog.warning("No decision made by heuristic, falling back, dumping program to /tmp/dump-{}.lp".format(self.__dumpcount))
+                        hlog.debug("Dumping program to /tmp/dump-{}.lp".format(self.__dumpcount))
                         with open("/tmp/dump-{}.lp".format(self.__dumpcount), 'w') as f:
                             f.write("\n".join(self.__lastprog))
-                    else:
-                        hlog.warning("No decision made by heuristic, falling back")
+                    hlog.warning("No decision made by heuristic, falling back and posting conflict")
+                    self.__unresolved_conflict = True
                     return vsids
             except StopIteration:
                 hlog.warning("found no model!")
@@ -309,8 +310,16 @@ class Declarative(object):
                     self.__externals[e] = TruthValue.false
             except KeyError:
                 pass
+        if self.__unresolved_conflict:
+            c = [l if ctl.assignment.is_true(l) else -l 
+                   for l in self.__impossible 
+                   if l in self.__res_lits.values()]
+            hlog.debug("posting conflict {}".format(c))
+            ctl.add_nogood(c)
+            ctl.propagate()
 
     def undo(self, thread_id, assign, changes):
+        self.__unresolved_conflict = False
         self.__offline_decisions = []
         # hlog.debug("undo set: {}".format(changes))
         for l in changes:

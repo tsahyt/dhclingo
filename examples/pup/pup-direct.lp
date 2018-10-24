@@ -9,9 +9,9 @@ sensor(S) :- zone2sensor(Z,S).
 :- comUnit(U), 3 { unit2zone(U,Z) : zone(Z) }.
 :- comUnit(U), 3 { unit2sensor(U,S) : sensor(S) }.
 
-partnerunits(U,P) :- unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
-% { partnerunits(U,P) } :- comUnit(U), comUnit(P), U != P.
-% :- not partnerunits(U,P), unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
+%partnerunits(U,P) :- unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
+{ partnerunits(U,P) } :- comUnit(U), comUnit(P), U != P.
+:- not partnerunits(U,P), unit2zone(U,Z), unit2sensor(P,S), zone2sensor(Z,S), U != P.
 %partnerunits(U,U+1) :- comUnit(U), comUnit(U+1).
 partnerunits(U,P) :- partnerunits(P,U), comUnit(U), comUnit(P).
 
@@ -81,4 +81,5 @@ rule3(U,A,X) :- not rule1(_,_,_), not rule2(_,_,_), currentElem(A,X), comUnit(U)
 #heuristic unit2zone(U,X) : rule3(U,z,X). [U@0, true]
 
 % #heuristic _resign. [0@3, true]
-% #heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
+#heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
+#heuristic partnerunits(U,P) : U = #min { X : comUnit(X) }, P = #max { X : comUnit(X) }. [0@-1, true]
