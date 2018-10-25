@@ -64,6 +64,7 @@ class Declarative(object):
 
         self.__last_decision = None
         self.__unresolved_conflict = False
+        self.__old_conflicts = set()
 
     def __remember_watch(self, lit, f):
         self.__res_lits[str(f)] = lit
@@ -315,6 +316,8 @@ class Declarative(object):
                    for l in self.__impossible 
                    if l in self.__res_lits.values()]
             hlog.debug("posting conflict {}".format(c))
+            assert(c not in self.__old_conflicts)
+            self.__old_conflicts.add(c)
             ctl.add_nogood(c)
             ctl.propagate()
 
