@@ -316,8 +316,8 @@ class Declarative(object):
                    for l in self.__impossible 
                    if l in self.__res_lits.values()]
             hlog.debug("posting conflict {}".format(c))
-            assert(c not in self.__old_conflicts)
-            self.__old_conflicts.add(c)
+            assert(tuple(c) not in self.__old_conflicts)
+            self.__old_conflicts.add(tuple(c))
             ctl.add_nogood(c)
             ctl.propagate()
 
