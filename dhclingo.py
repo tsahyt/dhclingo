@@ -236,6 +236,7 @@ class Declarative(object):
             hlog.warning(
                     "Invalid modifier {}! Defaulting to true".format(
                         decision[3]))
+            self.__decisions.append(vsids)
             return vsids
 
     def __level_weight(self, a):
