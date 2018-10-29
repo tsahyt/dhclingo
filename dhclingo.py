@@ -219,10 +219,12 @@ class Declarative(object):
         atom = decision[0]
         if str(atom) == "_vsids":
             hlog.debug("heuristic request fallback")
+            self.__decisions.append(vsids)
             return vsids
         if str(atom) == "_resign":
             hlog.debug("heuristic resigned, using vsids forever")
             self.decide = self.__resigned
+            self.__decisions.append(vsids)
             return vsids
         lit = self.__res_lits[str(atom)]
         hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
