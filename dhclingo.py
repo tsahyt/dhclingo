@@ -62,7 +62,7 @@ class Declarative(object):
 
         self.__btrack = btrack
 
-        self.__last_decision = None
+        self.__decisions = []
         self.__unresolved_conflict = False
         self.__old_conflicts = set()
 
@@ -156,7 +156,6 @@ class Declarative(object):
         self.__persisted |= set(map(str, xs))
     
     def __decide_offline(self, vsids):
-        self.__last_decision = None
         self.__offline_decisions = [x for x in 
                 self.__offline_decisions 
                 if self.__res_lit(x.arguments[0]) not in self.__impossible]
@@ -188,9 +187,9 @@ class Declarative(object):
         return vsids
 
     def __decide_online(self,vsids):
+        print self.__decisions
         t0 = time.time()
         stepsolver = self.__make_step_solver()
-        self.__last_decision = None
         with stepsolver.solve(yield_=True) as handle:
             try:
                 model = next(handle)
@@ -228,16 +227,15 @@ class Declarative(object):
         lit = self.__res_lits[str(atom)]
         hlog.debug("choice: {} {} ({})".format(atom, decision[3], lit))
         if str(decision[3]) == "true":
-            self.__last_decision = lit
+            self.__decisions.append(lit)
             return lit
         elif str(decision[3]) == "false":
-            self.__last_decision = -lit
+            self.__decisions.append(-lit)
             return -lit
         else:
             hlog.warning(
                     "Invalid modifier {}! Defaulting to true".format(
                         decision[3]))
-            self.__last_decision = None
             return vsids
 
     def __level_weight(self, a):
@@ -292,8 +290,9 @@ class Declarative(object):
         self.__program.append(rule)
 
     def propagate(self, ctl, changes):
-        if self.__last_decision and -self.__last_decision in changes:
+        if self.__decisions and -self.__decisions[-1] in changes:
             self.__stats.onestep()
+            self.__decisions[-1] = -self.__decisions[-1]
             if self.__btrack:
                 hlog.debug("clearing cache after one-step backtracking")
                 self.__offline_decisions = []
@@ -312,9 +311,7 @@ class Declarative(object):
             except KeyError:
                 pass
         if self.__unresolved_conflict:
-            c = [l if ctl.assignment.is_true(l) else -l 
-                   for l in self.__impossible 
-                   if l in self.__res_lits.values()]
+            c = self.__decisions
             hlog.debug("posting conflict {}".format(c))
             assert(tuple(c) not in self.__old_conflicts)
             self.__old_conflicts.add(tuple(c))
@@ -326,6 +323,8 @@ class Declarative(object):
         self.__offline_decisions = []
         # hlog.debug("undo set: {}".format(changes))
         for l in changes:
+            if l in self.__decisions:
+                self.__decisions.remove(l)
             assert(abs(l) in self.__impossible)
             try:
                 for e in self.__lit_watches[l]:
