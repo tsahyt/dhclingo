@@ -188,7 +188,6 @@ class Declarative(object):
         return vsids
 
     def __decide_online(self,vsids):
-        print self.__decisions
         t0 = time.time()
         stepsolver = self.__make_step_solver()
         with stepsolver.solve(yield_=True) as handle:

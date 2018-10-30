@@ -83,3 +83,4 @@ rule3(U,A,X) :- not rule1(_,_,_), not rule2(_,_,_), currentElem(A,X), comUnit(U)
 % #heuristic _resign. [0@3, true]
 #heuristic partnerunits(U,U+1) : comUnit(U), comUnit(U+1). [0@-1, true]
 #heuristic partnerunits(U,P) : U = #min { X : comUnit(X) }, P = #max { X : comUnit(X) }. [0@-1, true]
+#heuristic partnerunits(U,P) : comUnit(U), comUnit(P), U != P. [1@-1, false]
