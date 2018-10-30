@@ -2,21 +2,23 @@
 
 show_help() {
 cat << EOF
-Usage: ${0##*/} [-h] [-o] <program> <clingo options> <other programs> ...
+Usage: ${0##*/} [-h] [-o] [-c] <program> <clingo options> ...
 Run hclingo with a declarative heuristic.
 
     -h              display this help and exit
     -o              offline heuristic
+    -c              post conflict when no decision is made
     -r              restart heuristic on one-step backtracking
 EOF
 }
 
 # process command line arguments
 OFFLINE=0
+CONFLICT=0
 BTRACK=0
 
 OPTIND=1
-while getopts hor opt; do
+while getopts horc opt; do
     case $opt in
         h)
             show_help
@@ -27,6 +29,10 @@ while getopts hor opt; do
             ;;
         r)
             BTRACK=1
+            ;;
+        c)
+            CONFLICT=1
+            ;;
     esac
 done
 shift $(expr $OPTIND - 1 )
@@ -35,4 +41,4 @@ MFILE=$1
 shift
 
 # run hclingo
-env MFILE=$MFILE OFFLINE=$OFFLINE BTRACK=$BTRACK hclingo dhclingo.lp $@
+env MFILE=$MFILE OFFLINE=$OFFLINE BTRACK=$BTRACK CONFLICT=$CONFLICT hclingo dhclingo.lp $@

@@ -29,7 +29,7 @@ class TruthValue(Enum):
     free = 3
 
 class Declarative(object):
-    def __init__(self, mfile, offline, btrack):
+    def __init__(self, mfile, offline, btrack, conflicts):
         super(Declarative, self).__init__()
 
         self.__dumpcount = 0
@@ -64,6 +64,7 @@ class Declarative(object):
 
         self.__decisions = []
         self.__unresolved_conflict = False
+        self.__post_conflicts = conflicts
         self.__old_conflicts = set()
 
     def __remember_watch(self, lit, f):
@@ -207,7 +208,7 @@ class Declarative(object):
                         hlog.debug("Dumping program to /tmp/dump-{}.lp".format(self.__dumpcount))
                         with open("/tmp/dump-{}.lp".format(self.__dumpcount), 'w') as f:
                             f.write("\n".join(self.__lastprog))
-                    hlog.warning("No decision made by heuristic, falling back and posting conflict")
+                    hlog.warning("No decision made by heuristic, falling back")
                     self.__unresolved_conflict = True
                     return vsids
             except StopIteration:
@@ -313,7 +314,7 @@ class Declarative(object):
                     self.__externals[e] = TruthValue.false
             except KeyError:
                 pass
-        if self.__unresolved_conflict:
+        if self.__post_conflicts and self.__unresolved_conflict:
             c = self.__decisions
             hlog.debug("posting conflict {}".format(c))
             assert(tuple(c) not in self.__old_conflicts)
