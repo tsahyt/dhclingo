@@ -36,3 +36,9 @@ For debug output, the `LOG` environment variable can be used. It supports three
 levels, `LOG=0` (default), `LOG=1` (information output), `LOG=2` (full debug
 output). A fourth level can be accessed with `LOG=3`, which dumps heuristic
 programs to `/tmp` whenever no decision is made by the heuristic.
+
+Caveat
+------
+
+`dhclingo` is tested with Clingo linked against Python 2.7. It may or may not
+work when Clingo links against Python 3.
